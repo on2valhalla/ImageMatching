@@ -72,7 +72,7 @@ void getImages(vector<Mat> &images, string dir, int count)
 }
 
 //Gets number of images from a specified directory
-void getImages(IplImage *images[], string dir, int count)
+void getImages(IplImage *images[], vector<string> &fileNames, string dir, int count)
 {
     for (int i = 1; i <= count; i++)
     {
@@ -83,6 +83,7 @@ void getImages(IplImage *images[], string dir, int count)
             sstm << dir << "i0" << i << ".ppm";
 
         string fileName = sstm.str();
+        fileNames.push_back(fileName);
         images[i-1] = cvLoadImage(fileName.c_str(), 1);
     }
 }
@@ -97,6 +98,53 @@ void getHistograms(const vector<Mat> &images, vector<Mat> &histograms, int bucke
     for (unsigned int i = 0; i < images.size(); i++)
     {
         Mat image = images[i];
+        Mat histogram(3, histSize, CV_32F, Scalar(0));
+
+        CV_Assert(image.type() == CV_8UC3);
+        int numPixels = 0;
+        for (int j = 0; j < image.rows; j++)
+            for (int k = 0; k < image.cols; k++)
+            {
+                const Vec3b& pix = image.at<Vec3b>(i,j);
+                //threshold black values by skipping them
+                if(pix[0] + pix[1] + pix[2] < blackThresh*3)
+                    continue;
+                //threshold white values by skipping them
+                if(pix[0] + pix[1] + pix[2] > (255 - whiteThresh)*3 )
+                    continue;
+
+                histogram.at<float>(pix[0]*buckets/256, pix[1]*buckets/256, pix[2]*buckets/256) += 1.0;
+                numPixels +=1;
+            }
+
+
+        //Get a 3d iterator that returns a Mat that is
+        //a slice (plane) of the original nary matrix
+        cv::Mat plane;
+        const cv::Mat* hists[] = { &histogram, 0 };
+        cv::NAryMatIterator itN(hists, &plane, 1);
+
+        //Normalize the histogram
+        double normRatio = 1./numPixels;
+        for(unsigned int p = 0; p < itN.nplanes; p++, ++itN)
+            itN.planes[0] *= normRatio;
+
+        histograms.push_back(histogram);
+    }
+
+}
+
+
+// take a list of images and give back histograms
+//
+void getHistograms(const IplImage* images[], vector<Mat> &histograms, int buckets = 10, int blackThresh = 25, int whiteThresh = 25)
+{
+    const int histSize[] = {buckets, buckets, buckets};
+
+
+    for (unsigned int i = 0; i < 40; i++)
+    {
+        Mat image(images[i]);
         Mat histogram(3, histSize, CV_32F, Scalar(0));
 
         CV_Assert(image.type() == CV_8UC3);

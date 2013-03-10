@@ -42,51 +42,50 @@ MainWindow::~MainWindow()
 
 int MainWindow::init()
 {
-    int numImages = 40, buckets = 10, blackThresh = 25, whiteThresh = 25;
+	const int NUM_IMAGES = 40, BUCKETS = 10, B_THRESH = 25, W_THRESH = 25;
 
 	//Retrieve the images from the filesystem
-	IplImage* imgArr[numImages];
-    vector<Mat> images;
-	getImages(imgArr, IMG_DIR, numImages);
-    getImages(images, IMG_DIR, numImages);
+	IplImage* imgArr[NUM_IMAGES];
+	vector<string> fileNames;
+	getImages(imgArr, fileNames, IMG_DIR, NUM_IMAGES);
 
-    //get their respective histograms
-    vector<Mat> histograms;
-    getHistograms(images, histograms, buckets, blackThresh, whiteThresh);
+	//get their respective histograms
+	vector<Mat> histograms;
+	getHistograms(imgArr, histograms, BUCKETS, B_THRESH, W_THRESH);
 
 
 
 	//will hold the normalized L1 comparison data
-	double norms[numImages][numImages];
+	double norms[NUM_IMAGES][NUM_IMAGES];
 
 	// organized by image, (max/min), (value/idx)
-	int localMaxMin[numImages][2][2];
-	// organized by (max/min), (value/idx1/idx2)
-	int globalMaxMinPair[2][3];
-	for (int i = 1; i <= numImages; ++i)
+    int localMaxMin[NUM_IMAGES][2][2];
+    for (int i = 0; i < NUM_IMAGES; ++i)
 	{
 		//set initial values
 		localMaxMin[i][0][0] = 0;
-		localMaxMin[i][1][0] = 2;
-		globalMaxMinPair[0][0] = 0;
-		globalMaxMinPair[1][0] = 2;
+        localMaxMin[i][1][0] = 2;
 	}
 
+    // organized by (max/min), (value/idx1/idx2)
+    int globalMaxMinPair[2][3];
+    globalMaxMinPair[0][0] = 0;
+    globalMaxMinPair[1][0] = 2;
 
 
 
-    for (int i = 0; i < numImages; ++i)
+	for (int i = 0; i < NUM_IMAGES; ++i)
 	{
-		for (int j = 0; j < numImages; ++j)
+		for (int j = 0; j < NUM_IMAGES; ++j)
 		{
 			// get the l1 norm of the two histograms
 			double normVal = norm(histograms[i],histograms[j], NORM_L1);
 
 			// map the value to [0,1] (1 is the same image)
-            normVal = 1 - (normVal/2);
+			normVal = 1 - (normVal/2);
 
-            if (i == j)
-                continue;
+			if (i == j)
+				continue;
 
 			if (normVal > localMaxMin[i][0][0])
 			{
@@ -115,25 +114,21 @@ int MainWindow::init()
 		}
 	}
 
+
 	QTextCursor curs = this->ui->textEdit->textCursor();
 	curs.insertTable(40,3);
-	for (int i = 0; i< numImages; i++)
+	for (int i = 0; i< NUM_IMAGES; i++)
 	{
-        Mat image(imgArr[i]);
-		cvtColor(image, image, CV_BGR2RGB);
-		QImage qImage = QImage((const unsigned char*)image.data,image.cols,
-							   image.rows, image.step, QImage::Format_RGB888);
-        curs.insertImage(qImage);
-        curs.movePosition(QTextCursor::NextCell);
-        image = Mat(imgArr[localMaxMin[i][0][1]]);
-        qImage = QImage((const unsigned char*)image.data,image.cols,
-                                       image.rows, image.step, QImage::Format_RGB888);
-                curs.insertImage(qImage);
-        curs.movePosition(QTextCursor::NextCell);
-        image = Mat(imgArr[localMaxMin[i][1][1]]);
-        qImage = QImage((const unsigned char*)image.data,image.cols,
-                                       image.rows, image.step, QImage::Format_RGB888);
-                curs.insertImage(qImage);
+		QImage qImage = QImage(fileNames[i].c_str());
+		curs.insertImage(qImage);
+		curs.movePosition(QTextCursor::NextCell);
+
+		qImage = QImage(fileNames[localMaxMin[i][0][1]].c_str());
+		curs.insertImage(qImage);
+		curs.movePosition(QTextCursor::NextCell);
+
+		qImage = QImage(fileNames[localMaxMin[i][1][1]].c_str());
+		curs.insertImage(qImage);
 		curs.movePosition(QTextCursor::NextCell);
 	}
 

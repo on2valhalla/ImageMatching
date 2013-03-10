@@ -3,6 +3,21 @@
 
 #include <QMainWindow>
 
+
+//OpenCV
+#include <opencv2/core/core.hpp>
+#include <opencv/cv.h>
+#include <opencv2/highgui/highgui.hpp>
+
+//SYS
+#include <iostream>
+#include <string>
+#include <vector>
+
+
+using namespace std;
+using namespace cv;
+
 namespace Ui {
 class MainWindow;
 }
@@ -14,7 +29,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    int init();
+    int colorMatch(vector<string> &fileNames, vector<Mat> &images);
+    int textureMatch(vector<string> &fileNames, vector<Mat> &images);
     
 private:
     Ui::MainWindow *ui;

@@ -42,16 +42,17 @@ MainWindow::~MainWindow()
 
 int MainWindow::init()
 {
-	const int NUM_IMAGES = 40, BUCKETS = 10, B_THRESH = 25, W_THRESH = 25;
+    const int NUM_IMAGES = 40, BUCKETS = 16, B_THRESH = 30, W_THRESH = 30;
 
 	//Retrieve the images from the filesystem
 	IplImage* imgArr[NUM_IMAGES];
 	vector<string> fileNames;
-	getImages(imgArr, fileNames, IMG_DIR, NUM_IMAGES);
+    vector<Mat> images;
+    getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
 
 	//get their respective histograms
 	vector<Mat> histograms;
-	getHistograms(imgArr, histograms, BUCKETS, B_THRESH, W_THRESH);
+    getHistograms(images, histograms, BUCKETS, B_THRESH, W_THRESH);
 
 
 
@@ -60,7 +61,7 @@ int MainWindow::init()
 
 	// organized by image, (max/min), (value/idx)
     int localMaxMin[NUM_IMAGES][2][2];
-    for (int i = 0; i < NUM_IMAGES; ++i)
+    for (int i = 0; i < NUM_IMAGES; i++)
 	{
 		//set initial values
 		localMaxMin[i][0][0] = 0;
@@ -74,9 +75,9 @@ int MainWindow::init()
 
 
 
-	for (int i = 0; i < NUM_IMAGES; ++i)
+    for (int i = 0; i < NUM_IMAGES; i++)
 	{
-		for (int j = 0; j < NUM_IMAGES; ++j)
+        for (int j = 0; j < NUM_IMAGES; j++)
 		{
 			// get the l1 norm of the two histograms
 			double normVal = norm(histograms[i],histograms[j], NORM_L1);
@@ -116,20 +117,27 @@ int MainWindow::init()
 
 
 	QTextCursor curs = this->ui->textEdit->textCursor();
+    curs.insertText("Color Histogram Matches");
 	curs.insertTable(40,3);
 	for (int i = 0; i< NUM_IMAGES; i++)
 	{
 		QImage qImage = QImage(fileNames[i].c_str());
 		curs.insertImage(qImage);
+        curs.insertText("\n" + QString(fileNames[i].c_str()).section("/",-1));
 		curs.movePosition(QTextCursor::NextCell);
 
-		qImage = QImage(fileNames[localMaxMin[i][0][1]].c_str());
+        int maxIdx = (int) localMaxMin[i][0][1];
+        qImage = QImage(fileNames[maxIdx].c_str());
 		curs.insertImage(qImage);
+        curs.insertText("\n" + QString(fileNames[maxIdx].c_str()).section("/",-1));
 		curs.movePosition(QTextCursor::NextCell);
 
-		qImage = QImage(fileNames[localMaxMin[i][1][1]].c_str());
+        int minIdx = (int) localMaxMin[i][1][1];
+        qImage = QImage(fileNames[minIdx].c_str());
 		curs.insertImage(qImage);
+        curs.insertText("\n" + QString(fileNames[minIdx].c_str()).section("/",-1));
 		curs.movePosition(QTextCursor::NextCell);
+
 	}
 
 

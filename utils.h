@@ -55,7 +55,7 @@ Mat manyToOne(vector<Mat> &images, int numRows, int numCols)
 }
 
 //Gets number of images from a specified directory
-void getImages(vector<Mat> &images, string dir, int count)
+void getImages(vector<Mat> &images, vector<string> &fileNames, string dir, int count)
 {
     for (int i = 1; i <= count; i++)
     {
@@ -66,6 +66,7 @@ void getImages(vector<Mat> &images, string dir, int count)
             sstm << dir << "i0" << i << ".ppm";
 
         string fileName = sstm.str();
+        fileNames.push_back(fileName);
         Mat image = imread(fileName, 1);
         images.push_back(image);
     }

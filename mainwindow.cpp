@@ -39,7 +39,7 @@ void MainWindow::run()
 	// Mat bigImage = manyToOne(images, 10, 4);
 	// namedWindow("all");
 	// imshow("all", bigImage);
-//	waitKey(0); // Wait for a keystroke in the window
+	// // waitKey(0); // Wait for a keystroke in the window
 }
 
 int MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images)
@@ -72,13 +72,12 @@ int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
 
 
 	//make kernel for laplacian
-	float kernel[3][3] = { {1., 1., 1.},
-					{1., -8., 1.},
-					{1., 1., 1.}};
+	float kernel[3][3] = {{1., 1., 1.},
+						{1., -8., 1.},
+						{1., 1., 1.}};
 
 	// for testing the min and max ranges of the laplacians
-	 Mat minMax(numImages, 2, CV_32F);
-
+	Mat minMax(numImages, 2, CV_32F);
 
 	for (int i = 0; i < numImages; i++)
 	{
@@ -91,19 +90,11 @@ int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
 				grey.at<float>(j,k) = (pix[0] + pix[1] + pix[2])/3;
 			}
 		// fit to normal scale
-		grey *= 1./255;
-
-		// cvtColor(images[i], grey, CV_RGB2GRAY);
-		// if(grey.type() == CV_32F)
-		// 	cout << "32f";
-		// if(grey.type() == CV_8U)
-		// 	cout << "8u";
-		// else
-		// 	cout << "fuck";
+		// grey *= 1./255;
 
 
 		// apply the laplacian kernel
-		Mat laplacian = grey.clone();
+		Mat laplacian(grey.size(),CV_32F);
 		for( int j = 0; j < grey.rows; j++)
 			for( int k = 0; k < grey.cols; k++)
 			{
@@ -124,69 +115,78 @@ int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
 				laplacian.at<float>(j,k) += grey.at<float>(j-1,k-1) * kernel[2][0];
 				laplacian.at<float>(j,k) += grey.at<float>(j,k-1) * kernel[2][1];
 				laplacian.at<float>(j,k) += grey.at<float>(j+1,k-1) * kernel[2][2];
+
+				// // testing functionality to find the range
+				// // for background exclusion
+				// if(fabs(laplacian.at<float>(j,k)) < 10)
+				// 	laplacian.at<float>(j,k) = 1;
+				// else
+				// 	laplacian.at<float>(j,k) = 0;
+
 			}
 
-
-		// filter2D(grey, laplacian, CV_32F, kernel);
-		// Laplacian(grey, laplacian, CV_32F);
-
-		// laplacian -= 900;
-		// laplacian *= 255./900;
+        // laplacian *= 1./300;
 
 		// find local and global max TESTING
 		double min =0, max =0;
 		minMaxIdx(laplacian, &min, &max);
 		minMax.at<float>(i,0) = min;
 		minMax.at<float>(i,1) = max;
-		this->ui->textEdit->append(QString("i: %3\tmin: %1\tmax: %2")
-								   .arg(min).arg(max).arg(i));
+		Scalar avg = mean(laplacian);
+		this->ui->textEdit->append(QString("i: %3\tmin: %1\tavg: %4\tmax: %2")
+								   .arg(min,5,'f').arg(max).arg(i).arg(avg[0]*100,5,'f'));
 
 
-		// // HISTOGRAM the laplacian
-		// int histMax = 1900;
-		// int buckets = 50;
-		// int totalPix = 0;
-		// int totalValue = 0;
-		// // init the histogram and clear it out
-		// Mat lapHistogram(1, buckets, CV_32F, Scalar(0));
-		// for (int j=0; j <laplacian.rows; j++)
-		// 	for (int k=0; k <laplacian.rows; k++)
-		// 	{
-		// 		//count the pixels for each bucket
-		// 		float pixel = laplacian.at<float>(j,k);
+		// HISTOGRAM the laplacian
+        float histMax = 3600, buckets = 4000, totalPix = 0;
+		const float LAPLACE_THRESH = 10;
+		// init the histogram and clear it out
+		Mat lapHistogram(1, buckets, CV_32F, Scalar(0));
+		for (int j=0; j <laplacian.rows; j++)
+			for (int k=0; k <laplacian.rows; k++)
+			{
+				//count the pixels for each bucket
+				float pixel = laplacian.at<float>(j,k);
 
-		// 		//threshold here somehow
-		// 		if(pixel < 50)
-		// 			continue;
+				//threshold here if you will, but i do not
+				if(fabs(pixel) < LAPLACE_THRESH)
+				    continue;
 
-		// 		lapHistogram.at<float>(0,pixel*buckets/histMax) += 1.0;
-		// 		totalPix +=1;
-		// 		totalValue += pixel;
-		// 	}
+				// have to take the negative values into account
+				int idx = (int) pixel * (buckets/histMax) + buckets/2;
+				lapHistogram.at<float>(0,idx) += 1.0;
+				totalPix +=1;
+			}
 
-		// // NORMALIZE the histogram
-		// float normRatio = 1./totalPix;
-		// lapHistogram *= normRatio;
+		// NORMALIZE the histogram
+		float normRatio = 1./totalPix;
+		lapHistogram *= normRatio;
 
-		// // add the histogram to the vector
-		// histograms[i] = lapHistogram;
-
+		// add the histogram to the vector
+		histograms[i] = lapHistogram;
+		// keep the laplacian for display
 		laplacians[i] = laplacian;
 	}
 	
-	// // calculate the normalized L1 comparison of the histograms
-	// double locals[numImages][2][2], globals[2][3];
-	// calcL1Norm(histograms, locals, globals);
+	// for testing global maxs for laplacian
+	double min =0, max =0;
+	minMaxIdx(minMax, &min, &max);
+	this->ui->textEdit->append(QString("global min: %1\tglobal max: %2")
+							   .arg(min).arg(max));
 
-	// // display the results
-	 QTextCursor curs = this->ui->textEdit->textCursor();
-	// displayHistogramResults(curs, fileNames, locals, globals);
+
+	// calculate the normalized L1 comparison of the histograms
+	double locals[numImages][2][2], globals[2][3];
+	calcL1Norm(histograms, locals, globals);
+
+	// display the results
+	QTextCursor curs = this->ui->textEdit->textCursor();
+	displayHistogramResults(curs, fileNames, locals, globals);
 
 	// cout<< laplacians[0];
 	Mat bigImage = manyToOne(laplacians, 10, 4);
 	namedWindow("all");
 	imshow("all", bigImage);
-
 
 
 	return 0;

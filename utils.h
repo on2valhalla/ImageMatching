@@ -14,14 +14,13 @@ QT and OpenCV, as well as providing other functions for Image Matching
 
 //OpenCV
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 //SYS
 #include <vector>
 #include <string>
 #include <iostream>
 
-//local
-#include "colorhistogram.h"
 
 using namespace std;
 using namespace cv;
@@ -160,7 +159,7 @@ void calcL1Norm(vector<Mat> &histograms, double locals[][2][2], double globals[2
                 globals[0][1] = i;
                 globals[0][2] = j;
 			}
-			if (normVal < globals[1][0])
+			if (normVal > globals[1][0])
 			{
 				globals[1][0] = normVal;
                 globals[1][1] = i;
@@ -214,7 +213,7 @@ void displayHistogramResults(QTextCursor &curs, vector<string> &fileNames,
     curs.movePosition(QTextCursor::NextCell);
     curs.insertImage(qImages[globals[1][2]]);
     curs.insertText("\n" + QString(fileNames[globals[1][2]].c_str()).section("/",-1)
-            + QString("\n%1").arg(globals[1][1]));
+            + QString("\n%1").arg(globals[1][0]));
     curs.movePosition(QTextCursor::NextCell);
 
     curs.insertImage(qImages[globals[0][1]]);
@@ -227,6 +226,18 @@ void displayHistogramResults(QTextCursor &curs, vector<string> &fileNames,
     curs.movePosition(QTextCursor::NextCell);
 }
 
+
+void bgrToGray(const Mat &image, Mat &grey)
+{
+	for( int j = 0; j < image.rows; j++)
+		for( int k = 0; k < image.cols; k++)
+		{
+			const Vec3b& pix = image.at<Vec3b>(j,k);
+			grey.at<float>(j,k) = (pix[0] + pix[1] + pix[2])/3;
+		}
+		// fit to normal scale
+	grey *= 1./255;
+}
 
 
 

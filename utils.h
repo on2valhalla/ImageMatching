@@ -89,7 +89,7 @@ void getImages(IplImage *images[], string dir, int count)
 
 // take a list of images and give back histograms
 //
-void getHistograms(const vector<Mat> &images, vector<Mat> &histograms, int buckets = 10, int blackThreshold = 75)
+void getHistograms(const vector<Mat> &images, vector<Mat> &histograms, int buckets = 10, int blackThresh = 25, int whiteThresh = 25)
 {
     const int histSize[] = {buckets, buckets, buckets};
 
@@ -106,7 +106,10 @@ void getHistograms(const vector<Mat> &images, vector<Mat> &histograms, int bucke
             {
                 const Vec3b& pix = image.at<Vec3b>(i,j);
                 //threshold black values by skipping them
-                if(pix[0] + pix[1] + pix[2] < blackThreshold)
+                if(pix[0] + pix[1] + pix[2] < blackThresh*3)
+                    continue;
+                //threshold white values by skipping them
+                if(pix[0] + pix[1] + pix[2] > (255 - whiteThresh)*3 )
                     continue;
 
                 histogram.at<float>(pix[0]*buckets/256, pix[1]*buckets/256, pix[2]*buckets/256) += 1.0;

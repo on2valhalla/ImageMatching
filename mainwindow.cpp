@@ -42,17 +42,17 @@ MainWindow::~MainWindow()
 
 int MainWindow::init()
 {
-	int numImages = 40, buckets = 25;
+    int numImages = 40, buckets = 10, blackThresh = 25, whiteThresh = 25;
 
 	//Retrieve the images from the filesystem
 	IplImage* imgArr[numImages];
-	vector<Mat> images;
+    vector<Mat> images;
 	getImages(imgArr, IMG_DIR, numImages);
-	getImages(images, IMG_DIR, numImages);
+    getImages(images, IMG_DIR, numImages);
 
-	//get their respective histograms
-	vector<Mat> histograms;
-	getHistograms(images, histograms, buckets);
+    //get their respective histograms
+    vector<Mat> histograms;
+    getHistograms(images, histograms, buckets, blackThresh, whiteThresh);
 
 
 
@@ -75,7 +75,7 @@ int MainWindow::init()
 
 
 
-	for (int i = 0; i < numImages; ++i)
+    for (int i = 0; i < numImages; ++i)
 	{
 		for (int j = 0; j < numImages; ++j)
 		{
@@ -83,7 +83,10 @@ int MainWindow::init()
 			double normVal = norm(histograms[i],histograms[j], NORM_L1);
 
 			// map the value to [0,1] (1 is the same image)
-			normVal = 1 - (normVal/2);
+            normVal = 1 - (normVal/2);
+
+            if (i == j)
+                continue;
 
 			if (normVal > localMaxMin[i][0][0])
 			{
@@ -120,9 +123,17 @@ int MainWindow::init()
 		cvtColor(image, image, CV_BGR2RGB);
 		QImage qImage = QImage((const unsigned char*)image.data,image.cols,
 							   image.rows, image.step, QImage::Format_RGB888);
-		curs.insertImage(qImage);
-		curs.movePosition(QTextCursor::NextCell);
-		curs.movePosition(QTextCursor::NextCell);
+        curs.insertImage(qImage);
+        curs.movePosition(QTextCursor::NextCell);
+        image = Mat(imgArr[localMaxMin[i][0][1]]);
+        qImage = QImage((const unsigned char*)image.data,image.cols,
+                                       image.rows, image.step, QImage::Format_RGB888);
+                curs.insertImage(qImage);
+        curs.movePosition(QTextCursor::NextCell);
+        image = Mat(imgArr[localMaxMin[i][1][1]]);
+        qImage = QImage((const unsigned char*)image.data,image.cols,
+                                       image.rows, image.step, QImage::Format_RGB888);
+                curs.insertImage(qImage);
 		curs.movePosition(QTextCursor::NextCell);
 	}
 

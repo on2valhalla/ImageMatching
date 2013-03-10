@@ -214,7 +214,7 @@ void displayHistogramResults(QTextCursor &curs, vector<string> &fileNames,
     curs.movePosition(QTextCursor::NextCell);
     curs.insertImage(qImages[globals[1][2]]);
     curs.insertText("\n" + QString(fileNames[globals[1][2]].c_str()).section("/",-1)
-            + QString("\n%1").arg(globals[1][0]));
+            + QString("\n%1").arg(globals[1][1]));
     curs.movePosition(QTextCursor::NextCell);
 
     curs.insertImage(qImages[globals[0][1]]);

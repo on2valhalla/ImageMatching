@@ -42,7 +42,7 @@ MainWindow::~MainWindow()
 
 int MainWindow::init()
 {
-    const int NUM_IMAGES = 40, BUCKETS = 16, B_THRESH = 30, W_THRESH = 30;
+    const int NUM_IMAGES = 40, BUCKETS = 16, B_THRESH = 30, W_THRESH = 0;
 
     //Retrieve the images from the filesystem
 	vector<string> fileNames;

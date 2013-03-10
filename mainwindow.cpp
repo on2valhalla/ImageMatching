@@ -44,8 +44,7 @@ int MainWindow::init()
 {
     const int NUM_IMAGES = 40, BUCKETS = 16, B_THRESH = 30, W_THRESH = 30;
 
-	//Retrieve the images from the filesystem
-	IplImage* imgArr[NUM_IMAGES];
+    //Retrieve the images from the filesystem
 	vector<string> fileNames;
     vector<Mat> images;
     getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
@@ -60,7 +59,7 @@ int MainWindow::init()
 	double norms[NUM_IMAGES][NUM_IMAGES];
 
 	// organized by image, (max/min), (value/idx)
-    int localMaxMin[NUM_IMAGES][2][2];
+    double localMaxMin[NUM_IMAGES][2][2];
     for (int i = 0; i < NUM_IMAGES; i++)
 	{
 		//set initial values
@@ -69,7 +68,7 @@ int MainWindow::init()
 	}
 
     // organized by (max/min), (value/idx1/idx2)
-    int globalMaxMinPair[2][3];
+    double globalMaxMinPair[2][3];
     globalMaxMinPair[0][0] = 0;
     globalMaxMinPair[1][0] = 2;
 
@@ -83,7 +82,8 @@ int MainWindow::init()
 			double normVal = norm(histograms[i],histograms[j], NORM_L1);
 
 			// map the value to [0,1] (1 is the same image)
-			normVal = 1 - (normVal/2);
+            normVal = 1 - (normVal/2);
+            norms[i][j] = normVal;
 
 			if (i == j)
 				continue;
@@ -109,9 +109,7 @@ int MainWindow::init()
 				globalMaxMinPair[1][0] = normVal;
 				globalMaxMinPair[1][1] = i;
 				globalMaxMinPair[1][2] = j;
-			}
-
-			norms[i][j] = normVal;
+            }
 		}
 	}
 

@@ -179,7 +179,7 @@ void displayHistogramResults(QTextCursor &curs, vector<string> &fileNames,
 		qImages[i] = QImage(fileNames[i].c_str());
 
 
-	curs.insertText("Color Histogram Local Matches (Max/Min)");
+	curs.insertText("Histogram Local Matches (Max/Min)");
 	curs.insertTable(40,3);
 	for (int i = 0; i< NUM_IMAGES; i++)
 	{
@@ -204,7 +204,7 @@ void displayHistogramResults(QTextCursor &curs, vector<string> &fileNames,
 
 
     curs.movePosition(QTextCursor::End);
-    curs.insertText("\n\nColor Histogram Global Matches (Max/Min)");
+    curs.insertText("\n\nHistogram Global Matches (Max/Min)");
     curs.insertTable(2,2);
 
     curs.insertImage(qImages[globals[1][1]]);
@@ -229,14 +229,16 @@ void displayHistogramResults(QTextCursor &curs, vector<string> &fileNames,
 
 void bgrToGray(const Mat &image, Mat &grey)
 {
+	// recreate if necessary
+	grey.create(image.size(), CV_32F);
+
+
 	for( int j = 0; j < image.rows; j++)
 		for( int k = 0; k < image.cols; k++)
 		{
 			const Vec3b& pix = image.at<Vec3b>(j,k);
 			grey.at<float>(j,k) = (pix[0] + pix[1] + pix[2])/3;
 		}
-		// fit to normal scale
-	grey *= 1./255;
 }
 
 

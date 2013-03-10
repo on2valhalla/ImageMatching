@@ -71,6 +71,22 @@ void getImages(vector<Mat> &images, string dir, int count)
     }
 }
 
+//Gets number of images from a specified directory
+void getImages(IplImage *images[], string dir, int count)
+{
+    for (int i = 1; i <= count; i++)
+    {
+        stringstream sstm;
+        if( i >= 10)
+            sstm << dir << "i" << i << ".ppm";
+        else
+            sstm << dir << "i0" << i << ".ppm";
+
+        string fileName = sstm.str();
+        images[i-1] = cvLoadImage(fileName.c_str(), 1);
+    }
+}
+
 // take a list of images and give back histograms
 //
 void getHistograms(const vector<Mat> &images, vector<Mat> &histograms, int buckets = 10, int blackThreshold = 75)

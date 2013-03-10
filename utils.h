@@ -106,7 +106,7 @@ void getHistograms(const vector<Mat> &images, vector<Mat> &histograms, int bucke
         for (int j = 0; j < image.rows; j++)
             for (int k = 0; k < image.cols; k++)
             {
-                const Vec3b& pix = image.at<Vec3b>(i,j);
+                const Vec3b& pix = image.at<Vec3b>(j,k);
                 //threshold black values by skipping them
                 if(pix[0] + pix[1] + pix[2] < blackThresh*3)
                     continue;
@@ -153,7 +153,7 @@ void getHistograms(const IplImage* images[], vector<Mat> &histograms, int bucket
         for (int j = 0; j < image.rows; j++)
             for (int k = 0; k < image.cols; k++)
             {
-                const Vec3b& pix = image.at<Vec3b>(i,j);
+                const Vec3b& pix = image.at<Vec3b>(j,k);
                 //threshold black values by skipping them
                 if(pix[0] + pix[1] + pix[2] < blackThresh*3)
                     continue;

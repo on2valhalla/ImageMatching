@@ -31,6 +31,7 @@ public:
     ~MainWindow();
     int colorMatch(vector<string> &fileNames, vector<Mat> &images);
     int textureMatch(vector<string> &fileNames, vector<Mat> &images);
+    void run();
     
 private:
     Ui::MainWindow *ui;

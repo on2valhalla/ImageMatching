@@ -7,10 +7,11 @@ Main for the Image Matching program
 */
 
 //local
-#include "utils.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "utils.h"
 
+using namespace util;
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -35,10 +36,11 @@ void MainWindow::run()
 
 	Mat colorVals(NUM_IMAGES, NUM_IMAGES, CV_32F);
 	Mat textureVals(NUM_IMAGES, NUM_IMAGES, CV_32F);
+	Mat comboVals(NUM_IMAGES, NUM_IMAGES, CV_32F);
 
 	colorMatch(fileNames, images, colorVals);
 	textureMatch(fileNames, images, textureVals);
-	comboMatch(fileNames, images, colorVals, textureVals);
+	comboMatch(fileNames, images, colorVals, textureVals, comboVals);
 
 	// waitKey(0); // Wait for a keystroke in the window
 }
@@ -70,7 +72,7 @@ void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 
 }
 
-void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images
+void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 						Mat &textureVals)
 {
 	int NUM_IMAGES = images.size();
@@ -138,11 +140,24 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images
 
 }
 
-void MainWindow::comboMatch(vector<string> &fileNames, vector<Mat> &images
-			Mat &colorVals, Mat &textureVals)
+void MainWindow::comboMatch(vector<string> &fileNames, vector<Mat> &images,
+			Mat &colorVals, Mat &textureVals, Mat &comboVals)
 {
-	double r = .5;
+	double r = .7, s = 1.0;
 
+	comboVals.create(NUM_IMAGES, NUM_IMAGES, CV_32F);
+
+	for (int i = 0; i < NUM_IMAGES; i ++)
+		for (int j = 0; j < NUM_IMAGES; j ++)
+		{
+			double comboVal = (r * colorVals.at<double>(i,j))
+							+ (s - r) * textureVals.at<double>(i,j);
+
+			comboVals.at<double>(i,j) = comboVal;
+		}
+
+	QTextCursor curs = this->ui->textEdit->textCursor();
+	displayResults(curs, fileNames, comboVals);
 
 }
 // 

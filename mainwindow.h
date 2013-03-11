@@ -6,22 +6,20 @@
 
 //OpenCV
 #include <opencv2/core/core.hpp>
-#include <opencv/cv.h>
 #include <opencv2/highgui/highgui.hpp>
 
 //SYS
-#include <iostream>
-#include <string>
 #include <vector>
+#include <string>
+#include <iostream>
 #include <cmath>
-
-
-using namespace std;
-using namespace cv;
 
 namespace Ui {
 class MainWindow;
 }
+
+using namespace std;
+using namespace cv;
 
 class MainWindow : public QMainWindow
 {
@@ -31,11 +29,11 @@ public:
 	explicit MainWindow(QWidget *parent = 0);
 	~MainWindow();
 	void colorMatch(vector<string> &fileNames, vector<Mat> &images,
-					double colorVals[NUM_IMAGES][NUM_IMAGES]);
+					Mat &colorVals);
 	void textureMatch(vector<string> &fileNames, vector<Mat> &images,
-					double textureVals[NUM_IMAGES][NUM_IMAGES]);
-	void comboMatch(vector<string> &fileNames, vector<Mat> &images
-			double colorVals[NUM_IMAGES][NUM_IMAGES], double textureVals[NUM_IMAGES][NUM_IMAGES])
+					Mat &textureVals);
+	void comboMatch(vector<string> &fileNames, vector<Mat> &images,
+            Mat &colorVals, Mat &textureVals, Mat &comboVals);
 	void run();
 	
 private:

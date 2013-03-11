@@ -10,7 +10,6 @@ Main for the Image Matching program
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "utils.h"
-#include "dendnode.h"
 
 using namespace util;
 
@@ -68,9 +67,9 @@ void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 	calcL1Norm(histograms, locals, globals, colorVals);
 
 
-	QTextCursor curs = this->ui->textEdit->textCursor();
-	curs.insertText("COLOR\n---------\n");
-	displayResults(curs, fileNames, colorVals);
+	// QTextCursor curs = this->ui->textEdit->textCursor();
+	// curs.insertText("COLOR\n---------\n");
+	// displayResults(curs, fileNames, colorVals);
 
 	
 	Mat bigImage = manyToOne(images, 10, 4);
@@ -136,9 +135,9 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 	calcL1Norm(histograms, locals, globals, textureVals);
 
 	// display the results
-	QTextCursor curs = this->ui->textEdit->textCursor();
-	curs.insertText("\n\n\nTEXTURE\n---------\n");
-	displayResults(curs, fileNames, textureVals);
+	// QTextCursor curs = this->ui->textEdit->textCursor();
+	// curs.insertText("\n\n\nTEXTURE\n---------\n");
+	// displayResults(curs, fileNames, textureVals);
 
 	// display the laplacian images
 	Mat bigImage = manyToOne(laplacians, 10, 4);
@@ -183,24 +182,59 @@ void MainWindow::comboMatch(vector<string> &fileNames, vector<Mat> &images,
 
 
 
-void MainWindow::try2(Mat &comboVals)
+DendNode* MainWindow::try2(Mat &comboVals)
 {
 	// convert the combination values to distances
+	// and disregard matches to same element 
+	// (2 is out of range for min)
 	comboVals = 1 - comboVals;
+	for (int i = 0; i < comboVals.rows; i++)
+		comboVals.at<float>(i,i) = 2;
 
 	// initialize a node on the list for every image
-	
+	list<DendNode*> nodes;
+	for (int i = 0; i < NUM_IMAGES; i++)
+	{
+		DendNode *node = new DendNode(i);
+		nodes.push_back(node);
+	}
 
 	// loop until only one element remains
+	while (nodes.size() > 1)
+	{
+		/* 	
+			for every node in the list, check the rest of the list
+			for the minimum match... remember to check all the children
+			of every node (all indicies are contained in a childIndicies
+			list)
+		*/
+		float min = 2;
+		list<DendNode*>::iterator it, jt, mini, minj;
+		for (it = nodes.begin(); it != nodes.end(); it++)
+			for (jt = nodes.begin(); jt != nodes.end(); jt++)
+			{
+				float match = (*it)->maxMatch( *jt, comboVals );
+				if( match < min)
+				{
+					min = match;
+					mini = it;
+					minj = jt;
+				}
+			}
 
-	/* 	for every node in the list, check the rest of the list
-		for the minimum match... remember to check all the children
-		of every node (all indicies are contained in a childIndicies
-		list)
-	*/
+		// Once the min value and indicies are found, create a new node
+		// with the two indicies as children
+		DendNode *match = new DendNode(*mini, *minj, min);
+        // cout << **mini << "  " << **minj << endl;
+        cout<< *match << endl;
+		nodes.erase(mini);
+		nodes.erase(minj);
+		nodes.push_back(match);
+	}
 
-	// Once the min value and indicies are found, create a new node
-	// with the two indicies as children
+	// pop the final node
+	DendNode* root = *nodes.begin();
+	return root;
 }
 
 

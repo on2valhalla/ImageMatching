@@ -14,6 +14,8 @@
 #include <iostream>
 #include <cmath>
 
+#include "dendnode.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -35,7 +37,7 @@ public:
 	void comboMatch(vector<string> &fileNames, vector<Mat> &images,
             Mat &colorVals, Mat &textureVals, Mat &comboVals);
 	void createDendrogram(Mat & comboVals);
-	void try2(Mat & comboVals);
+	DendNode* try2(Mat & comboVals);
 	void run();
 	
 private:

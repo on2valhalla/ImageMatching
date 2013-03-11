@@ -33,13 +33,18 @@ void MainWindow::run()
 	vector<Mat> images;
 	getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
 
-	colorMatch(fileNames, images);
-	textureMatch(fileNames, images);
+	double colorVals[NUM_IMAGES][NUM_IMAGES];
+	double textureVals[NUM_IMAGES][NUM_IMAGES];
+
+	colorMatch(fileNames, images, NUM_IMAGES);
+	textureMatch(fileNames, images, NUM_IMAGES);
+	comboMatch()
 
 	// waitKey(0); // Wait for a keystroke in the window
 }
 
-int MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images)
+int MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
+					double colorVals[NUM_IMAGES][NUM_IMAGES])
 {
 	const int BUCKETS = 10, B_THRESH = 30, W_THRESH = 0;
 
@@ -51,7 +56,7 @@ int MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images)
 	//will hold the normalized L1 comparison data
 	double locals[NUM_IMAGES][2][2];
 	double globals[2][3];
-	calcL1Norm(histograms, locals, globals);
+	calcL1Norm(histograms, locals, globals, colorVals);
 
 
 	QTextCursor curs = this->ui->textEdit->textCursor();
@@ -66,7 +71,8 @@ int MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images)
 	return 0;
 }
 
-int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
+int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images
+						double textureVals[NUM_IMAGES][NUM_IMAGES])
 {
 	int NUM_IMAGES = images.size();
 	//will hold processed histograms
@@ -118,8 +124,8 @@ int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
 
 
 	// calculate the normalized L1 comparison of the histograms
-	double locals[NUM_IMAGES][2][2], globals[2][3], allVals[NUM_IMAGES][NUM_IMAGES];
-	calcL1Norm(histograms, locals, globals, allVals);
+	double locals[NUM_IMAGES][2][2], globals[2][3];
+	calcL1Norm(histograms, locals, globals, textureVals);
 
 	// display the results
 	QTextCursor curs = this->ui->textEdit->textCursor();

@@ -33,8 +33,8 @@ void MainWindow::run()
 	vector<Mat> images;
 	getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
 
-	double colorVals[NUM_IMAGES][NUM_IMAGES];
-	double textureVals[NUM_IMAGES][NUM_IMAGES];
+	Mat colorVals(NUM_IMAGES, NUM_IMAGES, CV_32F);
+	Mat textureVals(NUM_IMAGES, NUM_IMAGES, CV_32F);
 
 	colorMatch(fileNames, images, colorVals);
 	textureMatch(fileNames, images, textureVals);
@@ -44,7 +44,7 @@ void MainWindow::run()
 }
 
 void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
-					double colorVals[NUM_IMAGES][NUM_IMAGES])
+					Mat &colorVals)
 {
 	const int BUCKETS = 10, B_THRESH = 30, W_THRESH = 0;
 
@@ -71,7 +71,7 @@ void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 }
 
 void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images
-						double textureVals[NUM_IMAGES][NUM_IMAGES])
+						Mat &textureVals)
 {
 	int NUM_IMAGES = images.size();
 	//will hold processed histograms
@@ -139,9 +139,11 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images
 }
 
 void MainWindow::comboMatch(vector<string> &fileNames, vector<Mat> &images
-			double colorVals[NUM_IMAGES][NUM_IMAGES], double textureVals[NUM_IMAGES][NUM_IMAGES])
+			Mat &colorVals, Mat &textureVals)
 {
-	
+	double r = .5;
+
+
 }
 // 
 

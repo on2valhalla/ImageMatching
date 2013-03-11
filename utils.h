@@ -123,8 +123,10 @@ void getHistograms(const vector<Mat> &images, vector<Mat> &histograms, int bucke
 }
 
 void calcL1Norm(vector<Mat> &histograms, double locals[NUM_IMAGES][2][2], 
-			double globals[2][3], double allVals[NUM_IMAGES][NUM_IMAGES])
+			double globals[2][3], Mat &allVals)
 {
+	// create mat if necessary
+	allVals.create(NUM_IMAGES, NUM_IMAGES, CV_32F);
 	globals[0][0] = 10000; //global min val
 	globals[1][0] = 0; // global max val
 	for (int i = 0; i < NUM_IMAGES; i++)
@@ -140,7 +142,8 @@ void calcL1Norm(vector<Mat> &histograms, double locals[NUM_IMAGES][2][2],
 			normVal = 1 - (normVal/2.);
 			if(normVal < 0)
 				normVal *= -1;
-			allVals[i][j] = normVal;
+			// keep track of all the values
+			allVals.at<double>(i,j) = normVal;
 
 			//hack to make min max work
 			if( i == j)
@@ -158,14 +161,14 @@ void calcL1Norm(vector<Mat> &histograms, double locals[NUM_IMAGES][2][2],
 			if (normVal < globals[0][0])
 			{
 				globals[0][0] = normVal;
-                globals[0][1] = i;
-                globals[0][2] = j;
+				globals[0][1] = i;
+				globals[0][2] = j;
 			}
 			if (normVal > globals[1][0])
 			{
 				globals[1][0] = normVal;
-                globals[1][1] = i;
-                globals[1][2] = j;
+				globals[1][1] = i;
+				globals[1][2] = j;
 			}
 		}
 	}
@@ -200,32 +203,43 @@ void displayHistogramResults(QTextCursor &curs, vector<string> &fileNames,
 
 		curs.insertImage(qImages[minIdx]);
 		curs.insertText("\n" + QString(fileNames[minIdx].c_str()).section("/",-1)
-                + QString("\n%1").arg(min,4,'f',5));
-        curs.movePosition(QTextCursor::NextCell);
+				+ QString("\n%1").arg(min,4,'f',5));
+		curs.movePosition(QTextCursor::NextCell);
 	}
 
 
-    curs.movePosition(QTextCursor::End);
-    curs.insertText("\n\nHistogram Global Matches (Max/Min)");
-    curs.insertTable(2,2);
+	curs.movePosition(QTextCursor::End);
+	curs.insertText("\n\nHistogram Global Matches (Max/Min)");
+	curs.insertTable(2,2);
 
-    curs.insertImage(qImages[globals[1][1]]);
-    curs.insertText("\n" + QString(fileNames[globals[1][1]].c_str()).section("/",-1)
-            + QString("\n%1").arg(globals[1][0]));
-    curs.movePosition(QTextCursor::NextCell);
-    curs.insertImage(qImages[globals[1][2]]);
-    curs.insertText("\n" + QString(fileNames[globals[1][2]].c_str()).section("/",-1)
-            + QString("\n%1").arg(globals[1][0]));
-    curs.movePosition(QTextCursor::NextCell);
 
-    curs.insertImage(qImages[globals[0][1]]);
-    curs.insertText("\n" + QString(fileNames[globals[0][1]].c_str()).section("/",-1)
-            + QString("\n%1").arg(globals[0][0]));
-    curs.movePosition(QTextCursor::NextCell);
-    curs.insertImage(qImages[globals[0][2]]);
-    curs.insertText("\n" + QString(fileNames[globals[0][2]].c_str()).section("/",-1)
-            + QString("\n%1").arg(globals[0][0]));
-    curs.movePosition(QTextCursor::NextCell);
+	double min = globals[0][0];
+	int minIdx1 = (int)globals[0][1];
+	int minIdx2 = (int)globals[0][2];
+	double max = globals[1][0];
+	int maxIdx1 = (int)globals[1][1];
+	int maxIdx2 = (int)globals[1][2];
+	
+	curs.insertImage(qImages[maxIdx1]);
+	curs.insertText("\n" + QString(fileNames[maxIdx1].c_str()).section("/",-1)
+			+ QString("\n%1").arg(max));
+	curs.movePosition(QTextCursor::NextCell);
+
+	curs.insertImage(qImages[maxIdx2]);
+	curs.insertText("\n" + QString(fileNames[maxIdx2].c_str()).section("/",-1)
+			+ QString("\n%1").arg(max));
+	curs.movePosition(QTextCursor::NextCell);
+
+
+	curs.insertImage(qImages[minIdx1]);
+	curs.insertText("\n" + QString(fileNames[minIdx1].c_str()).section("/",-1)
+			+ QString("\n%1").arg(min));
+	curs.movePosition(QTextCursor::NextCell);
+
+	curs.insertImage(qImages[minIdx2]);
+	curs.insertText("\n" + QString(fileNames[minIdx2].c_str()).section("/",-1)
+			+ QString("\n%1").arg(min));
+	curs.movePosition(QTextCursor::NextCell);
 }
 
 // converts image to grey

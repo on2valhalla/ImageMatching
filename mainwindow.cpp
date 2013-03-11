@@ -36,14 +36,14 @@ void MainWindow::run()
 	double colorVals[NUM_IMAGES][NUM_IMAGES];
 	double textureVals[NUM_IMAGES][NUM_IMAGES];
 
-	colorMatch(fileNames, images, NUM_IMAGES);
-	textureMatch(fileNames, images, NUM_IMAGES);
-	comboMatch()
+	colorMatch(fileNames, images, colorVals);
+	textureMatch(fileNames, images, textureVals);
+	comboMatch(fileNames, images, colorVals, textureVals);
 
 	// waitKey(0); // Wait for a keystroke in the window
 }
 
-int MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
+void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 					double colorVals[NUM_IMAGES][NUM_IMAGES])
 {
 	const int BUCKETS = 10, B_THRESH = 30, W_THRESH = 0;
@@ -68,10 +68,9 @@ int MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 	namedWindow("all");
 	imshow("all", bigImage);
 
-	return 0;
 }
 
-int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images
+void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images
 						double textureVals[NUM_IMAGES][NUM_IMAGES])
 {
 	int NUM_IMAGES = images.size();
@@ -137,8 +136,12 @@ int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images
 	namedWindow("laplacian");
 	imshow("laplacian", bigImage);
 
+}
 
-	return 0;
+void MainWindow::comboMatch(vector<string> &fileNames, vector<Mat> &images
+			double colorVals[NUM_IMAGES][NUM_IMAGES], double textureVals[NUM_IMAGES][NUM_IMAGES])
+{
+	
 }
 // 
 

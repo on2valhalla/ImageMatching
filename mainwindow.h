@@ -25,17 +25,21 @@ class MainWindow;
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
-    
+	Q_OBJECT
+	
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-    int colorMatch(vector<string> &fileNames, vector<Mat> &images);
-    int textureMatch(vector<string> &fileNames, vector<Mat> &images);
-    void run();
-    
+	explicit MainWindow(QWidget *parent = 0);
+	~MainWindow();
+	void colorMatch(vector<string> &fileNames, vector<Mat> &images,
+					double colorVals[NUM_IMAGES][NUM_IMAGES]);
+	void textureMatch(vector<string> &fileNames, vector<Mat> &images,
+					double textureVals[NUM_IMAGES][NUM_IMAGES]);
+	void comboMatch(vector<string> &fileNames, vector<Mat> &images
+			double colorVals[NUM_IMAGES][NUM_IMAGES], double textureVals[NUM_IMAGES][NUM_IMAGES])
+	void run();
+	
 private:
-    Ui::MainWindow *ui;
+	Ui::MainWindow *ui;
 };
 
 #endif // MAINWINDOW_H

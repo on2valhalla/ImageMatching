@@ -34,9 +34,10 @@ void MainWindow::run()
 	vector<Mat> images;
 	getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
 
-	Mat colorVals(NUM_IMAGES, NUM_IMAGES, CV_32F);
-	Mat textureVals(NUM_IMAGES, NUM_IMAGES, CV_32F);
-	Mat comboVals(NUM_IMAGES, NUM_IMAGES, CV_32F);
+	// -1 for y val because you dont want to include self match
+	Mat colorVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
+	Mat textureVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
+	Mat comboVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
 
 	colorMatch(fileNames, images, colorVals);
 	textureMatch(fileNames, images, textureVals);
@@ -63,7 +64,7 @@ void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 
 	QTextCursor curs = this->ui->textEdit->textCursor();
 	curs.insertText("COLOR\n---------\n");
-	displayHistogramResults(curs, fileNames, locals, globals);
+	displayResults(curs, fileNames, colorVals);
 
 	
 	Mat bigImage = manyToOne(images, 10, 4);
@@ -131,7 +132,7 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 	// display the results
 	QTextCursor curs = this->ui->textEdit->textCursor();
 	curs.insertText("\n\n\nTEXTURE\n---------\n");
-	displayHistogramResults(curs, fileNames, locals, globals);
+	displayResults(curs, fileNames, textureVals);
 
 	// display the laplacian images
 	Mat bigImage = manyToOne(laplacians, 10, 4);
@@ -143,20 +144,27 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 void MainWindow::comboMatch(vector<string> &fileNames, vector<Mat> &images,
 			Mat &colorVals, Mat &textureVals, Mat &comboVals)
 {
-	double r = .7, s = 1.0;
-
-	comboVals.create(NUM_IMAGES, NUM_IMAGES, CV_32F);
+	float r = .7, s = 1.0;
+	QTextCursor curs = this->ui->textEdit->textCursor();
 
 	for (int i = 0; i < NUM_IMAGES; i ++)
 		for (int j = 0; j < NUM_IMAGES; j ++)
 		{
-			double comboVal = (r * colorVals.at<double>(i,j))
-							+ (s - r) * textureVals.at<double>(i,j);
+			float colorVal = colorVals.at<float>(i,j);
+			float textureVal = textureVals.at<float>(i,j);
+			float comboVal = (r * colorVal) + ((s - r) * textureVal);
 
-			comboVals.at<double>(i,j) = comboVal;
+
+			// keep track of all the values
+			if(j < i)
+				comboVals.at<float>(i, j) = comboVal;
+			else if(j > i)
+				comboVals.at<float>(i, j-1) = comboVal;
+			// cout << i << ", " << j << ":\t" << colorVal << "\t" << textureVal << "\t" 
+			// 	<< comboVal << "\t" << comboVals.at<float>(i,j) << endl;
 		}
 
-	QTextCursor curs = this->ui->textEdit->textCursor();
+	curs.insertText("\n\n\nTEXTURE\n---------\n");
 	displayResults(curs, fileNames, comboVals);
 
 }

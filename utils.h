@@ -129,8 +129,6 @@ namespace util
 	void calcL1Norm(vector<Mat> &histograms, double locals[NUM_IMAGES][2][2], 
 				double globals[2][3], Mat &allVals)
 	{
-		// create mat if necessary
-		allVals.create(NUM_IMAGES, NUM_IMAGES, CV_32F);
 		globals[0][0] = 10000; //global min val
 		globals[1][0] = 0; // global max val
 		for (int i = 0; i < NUM_IMAGES; i++)
@@ -146,8 +144,13 @@ namespace util
 				normVal = 1 - (normVal/2.);
 				if(normVal < 0)
 					normVal *= -1;
+
 				// keep track of all the values
-				allVals.at<double>(i,j) = normVal;
+				if(j < i)
+					allVals.at<float>(i, j) = (float) normVal;
+				else if(j > i)
+					allVals.at<float>(i, j-1) = (float) normVal;
+				// cout << allVals.at<float>(i,j) <<endl;
 
 				//hack to make min max work
 				if( i == j)
@@ -353,14 +356,20 @@ namespace util
 			double min, max;
 			int minIdx[2], maxIdx[2];
 			minMaxIdx(values.row(i), &min, &max, minIdx, maxIdx);
+			if( minIdx[1] >= i)
+				minIdx[1]++;
+			if( maxIdx[1] >= i)
+				maxIdx[1]++;
 
-			curs.insertImage(qImages[maxIdx[0]]);
-			curs.insertText("\n" + QString(fileNames[maxIdx[0]].c_str()).section("/",-1)
+			cout << i <<" " << values.row(i).cols <<" " << maxIdx[1] <<" " << minIdx[1] << endl;
+
+			curs.insertImage(qImages[maxIdx[1]]);
+			curs.insertText("\n" + QString(fileNames[maxIdx[1]].c_str()).section("/",-1)
 					+ QString("\n%1").arg(max,4,'f',5));
 			curs.movePosition(QTextCursor::NextCell);
 
-			curs.insertImage(qImages[minIdx[0]]);
-			curs.insertText("\n" + QString(fileNames[minIdx[0]].c_str()).section("/",-1)
+			curs.insertImage(qImages[minIdx[1]]);
+			curs.insertText("\n" + QString(fileNames[minIdx[1]].c_str()).section("/",-1)
 					+ QString("\n%1").arg(min,4,'f',5));
 			curs.movePosition(QTextCursor::NextCell);
 		}
@@ -375,7 +384,13 @@ namespace util
 		double min, max;
 		int minIdx[2], maxIdx[2];
 		minMaxIdx(values, &min, &max, minIdx, maxIdx);
+		if(minIdx[1] >= minIdx[0])
+			minIdx[1]++;
+		if(maxIdx[1] >= maxIdx[0])
+			maxIdx[1]++;
 		
+		cout << maxIdx[0] <<" " << maxIdx[1] <<" " << minIdx[0] <<" " << minIdx[1] <<" " << endl;
+
 		curs.insertImage(qImages[maxIdx[0]]);
 		curs.insertText("\n" + QString(fileNames[maxIdx[0]].c_str()).section("/",-1)
 				+ QString("\n%1").arg(max));

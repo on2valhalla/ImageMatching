@@ -122,7 +122,8 @@ void getHistograms(const vector<Mat> &images, vector<Mat> &histograms, int bucke
 
 }
 
-void calcL1Norm(vector<Mat> &histograms, double locals[][2][2], double globals[2][3])
+void calcL1Norm(vector<Mat> &histograms, double locals[NUM_IMAGES][2][2], 
+			double globals[2][3], double allVals[NUM_IMAGES][NUM_IMAGES])
 {
 	globals[0][0] = 10000; //global min val
 	globals[1][0] = 0; // global max val
@@ -138,7 +139,8 @@ void calcL1Norm(vector<Mat> &histograms, double locals[][2][2], double globals[2
 			// map the value to [0,1] (1 is the same image)
 			normVal = 1 - (normVal/2.);
 			if(normVal < 0)
-				normVal = 0;
+				normVal *= -1;
+			allVals[i][j] = normVal;
 
 			//hack to make min max work
 			if( i == j)

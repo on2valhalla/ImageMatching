@@ -68,17 +68,17 @@ int MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images)
 
 int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
 {
-	int numImages = images.size();
+	int NUM_IMAGES = images.size();
 	//will hold processed histograms
-	vector<Mat> histograms(numImages);
-	vector<Mat> laplacians(numImages);
+	vector<Mat> histograms(NUM_IMAGES);
+	vector<Mat> laplacians(NUM_IMAGES);
 
 
 
 	// for testing the min and max ranges of the laplacians
-	// Mat minMax(numImages, 2, CV_32F);
+	// Mat minMax(NUM_IMAGES, 2, CV_32F);
 
-	for (int i = 0; i < numImages; i++)
+	for (int i = 0; i < NUM_IMAGES; i++)
 	{
 		// convert image to greyscale
 		Mat grey;
@@ -118,8 +118,8 @@ int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
 
 
 	// calculate the normalized L1 comparison of the histograms
-	double locals[numImages][2][2], globals[2][3];
-	calcL1Norm(histograms, locals, globals);
+	double locals[NUM_IMAGES][2][2], globals[2][3], allVals[NUM_IMAGES][NUM_IMAGES];
+	calcL1Norm(histograms, locals, globals, allVals);
 
 	// display the results
 	QTextCursor curs = this->ui->textEdit->textCursor();

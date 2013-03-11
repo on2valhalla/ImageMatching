@@ -226,8 +226,8 @@ void displayHistogramResults(QTextCursor &curs, vector<string> &fileNames,
     curs.movePosition(QTextCursor::NextCell);
 }
 
-
-void bgrToGray(const Mat &image, Mat &grey)
+// converts image to grey
+void bgrToGrey(const Mat &image, Mat &grey)
 {
 	// recreate if necessary
 	grey.create(image.size(), CV_32F);
@@ -239,6 +239,75 @@ void bgrToGray(const Mat &image, Mat &grey)
 			const Vec3b& pix = image.at<Vec3b>(j,k);
 			grey.at<float>(j,k) = (pix[0] + pix[1] + pix[2])/3;
 		}
+}
+
+// input an image in greyscale
+void applyLaplacian(const Mat &grey, Mat &laplacian)
+{
+	//make kernel for laplacian
+	float kernel[3][3] = {{1., 1., 1.},
+						{1., -8., 1.},
+						{1., 1., 1.}};
+
+	//create the Mat if necessary
+	laplacian.create(grey.size(), CV_32F);
+
+	for( int j = 0; j < grey.rows; j++)
+		for( int k = 0; k < grey.cols; k++)
+		{
+			laplacian.at<float>(j,k) = grey.at<float>(j,k);
+
+			//skip the edge elements
+			if(j == 0 || k == 0 || 
+				j == grey.rows -1 || k == grey.cols -1)
+				continue;
+
+			//apply kernel
+			laplacian.at<float>(j,k) *= kernel[1][1];
+			laplacian.at<float>(j,k) += grey.at<float>(j-1,k-1) * kernel[0][0];
+			laplacian.at<float>(j,k) += grey.at<float>(j-1,k) * kernel[0][1];
+			laplacian.at<float>(j,k) += grey.at<float>(j-1,k+1) * kernel[0][2];
+			laplacian.at<float>(j,k) += grey.at<float>(j,k-1) * kernel[1][0];
+			laplacian.at<float>(j,k) += grey.at<float>(j,k+1) * kernel[1][2];
+			laplacian.at<float>(j,k) += grey.at<float>(j-1,k-1) * kernel[2][0];
+			laplacian.at<float>(j,k) += grey.at<float>(j,k-1) * kernel[2][1];
+			laplacian.at<float>(j,k) += grey.at<float>(j+1,k-1) * kernel[2][2];
+
+			// // testing functionality to find the range
+			// // for background exclusion
+			// if(fabs(laplacian.at<float>(j,k)) < 10)
+			// 	laplacian.at<float>(j,k) = 1;
+			// else
+			// 	laplacian.at<float>(j,k) = 0;
+		}
+}
+
+void getLaplaceHistogram(const Mat &laplacian, Mat &histogram, 
+	float buckets = 4000, float lapAbsMax = 1800, float laplaceThresh = 12)
+{
+	// init the histogram and clear it out
+	histogram = Mat(1, buckets, CV_32F, Scalar(0));
+
+	int totalPix = 0;
+	for (int j=0; j <laplacian.rows; j++)
+		for (int k=0; k <laplacian.rows; k++)
+		{
+			//count the pixels for each bucket
+			float pixel = laplacian.at<float>(j,k);
+
+			// //threshold here if you will, but i do not
+			// if(fabs(pixel) < laplaceThresh)
+			//     continue;
+
+			// have to take the negative values into account
+			int idx = (int) pixel * buckets/(2*lapAbsMax) + buckets/2;
+			histogram.at<float>(0,idx) += 1.0;
+			totalPix +=1;
+		}
+
+	// NORMALIZE the histogram
+	float normRatio = 1./totalPix;
+	histogram *= normRatio;
 }
 
 

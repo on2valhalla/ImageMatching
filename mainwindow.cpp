@@ -74,60 +74,22 @@ int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
 	vector<Mat> laplacians(numImages);
 
 
-	//make kernel for laplacian
-	float kernel[3][3] = {{1., 1., 1.},
-						{1., -8., 1.},
-						{1., 1., 1.}};
 
 	// for testing the min and max ranges of the laplacians
-	Mat minMax(numImages, 2, CV_32F);
+	// Mat minMax(numImages, 2, CV_32F);
 
 	for (int i = 0; i < numImages; i++)
 	{
 		// convert image to greyscale
-		Mat grey(images[i].size(), CV_32F, Scalar(0));
-		for( int j = 0; j < images[i].rows; j++)
-			for( int k = 0; k < images[i].cols; k++)
-			{
-				const Vec3b& pix = images[i].at<Vec3b>(j,k);
-				grey.at<float>(j,k) = (pix[0] + pix[1] + pix[2])/3;
-			}
-
+		Mat grey;
+		bgrToGrey(images[i], grey);
 
 		// apply the laplacian kernel
-		Mat laplacian(grey.size(),CV_32F);
-		for( int j = 0; j < grey.rows; j++)
-			for( int k = 0; k < grey.cols; k++)
-			{
-				laplacian.at<float>(j,k) = grey.at<float>(j,k);
+		Mat laplacian;
+		applyLaplacian(grey, laplacian);
 
-				//skip the fringe elements
-				if(j == 0 || k == 0 || 
-					j == grey.rows -1 || k == grey.cols -1)
-					continue;
-
-				//apply kernel
-				laplacian.at<float>(j,k) *= kernel[1][1];
-				laplacian.at<float>(j,k) += grey.at<float>(j-1,k-1) * kernel[0][0];
-				laplacian.at<float>(j,k) += grey.at<float>(j-1,k) * kernel[0][1];
-				laplacian.at<float>(j,k) += grey.at<float>(j-1,k+1) * kernel[0][2];
-				laplacian.at<float>(j,k) += grey.at<float>(j,k-1) * kernel[1][0];
-				laplacian.at<float>(j,k) += grey.at<float>(j,k+1) * kernel[1][2];
-				laplacian.at<float>(j,k) += grey.at<float>(j-1,k-1) * kernel[2][0];
-				laplacian.at<float>(j,k) += grey.at<float>(j,k-1) * kernel[2][1];
-				laplacian.at<float>(j,k) += grey.at<float>(j+1,k-1) * kernel[2][2];
-
-				// // testing functionality to find the range
-				// // for background exclusion
-				// if(fabs(laplacian.at<float>(j,k)) < 10)
-				// 	laplacian.at<float>(j,k) = 1;
-				// else
-				// 	laplacian.at<float>(j,k) = 0;
-
-			}
-
-
-		// // find local and global max TESTING
+		// //  FOR TESTING
+		// // find local and global max
 		// double min =0, max =0;
 		// minMaxIdx(laplacian, &min, &max);
 		// minMax.at<float>(i,0) = min;
@@ -136,39 +98,18 @@ int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
 		// this->ui->textEdit->append(QString("i: %3\tmin: %1\tavg: %4\tmax: %2")
 		// 						   .arg(min,5,'f').arg(max).arg(i).arg(avg[0]*100,5,'f'));
 
-
 		// HISTOGRAM the laplacian
-		float histMax = 3600, buckets = 4000, totalPix = 0;
-		const float LAPLACE_THRESH = 12;
-		// init the histogram and clear it out
-		Mat lapHistogram(1, buckets, CV_32F, Scalar(0));
-		for (int j=0; j <laplacian.rows; j++)
-			for (int k=0; k <laplacian.rows; k++)
-			{
-				//count the pixels for each bucket
-				float pixel = laplacian.at<float>(j,k);
-
-//				//threshold here if you will, but i do not
-//				if(fabs(pixel) < LAPLACE_THRESH)
-//				    continue;
-
-				// have to take the negative values into account
-				int idx = (int) pixel * (buckets/histMax) + buckets/2;
-				lapHistogram.at<float>(0,idx) += 1.0;
-				totalPix +=1;
-			}
-
-		// NORMALIZE the histogram
-		float normRatio = 1./totalPix;
-		lapHistogram *= normRatio;
+		Mat histogram;
+		getLaplaceHistogram(laplacian, histogram);
 
 		// add the histogram to the vector
-		histograms[i] = lapHistogram;
+		histograms[i] = histogram;
 		// keep the laplacian for display
-		 laplacian *= 1./200;
+		laplacian *= 1./200;
 		laplacians[i] = laplacian;
 	}
 	
+	// //  FOR TESTING
 	// // for testing global maxs for laplacian
 	// double min =0, max =0;
 	// minMaxIdx(minMax, &min, &max);
@@ -185,7 +126,7 @@ int MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images)
 	curs.insertText("\n\n\nTEXTURE\n---------\n");
 	displayHistogramResults(curs, fileNames, locals, globals);
 
-	// cout<< laplacians[0];
+	// display the laplacian images
 	Mat bigImage = manyToOne(laplacians, 10, 4);
 	namedWindow("laplacian");
 	imshow("laplacian", bigImage);

@@ -10,6 +10,7 @@ Main for the Image Matching program
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "utils.h"
+#include "dendnode.h"
 
 using namespace util;
 
@@ -29,19 +30,24 @@ MainWindow::~MainWindow()
 
 void MainWindow::run()
 {
-	//Retrieve the images from the filesystem
-	vector<string> fileNames;
-	vector<Mat> images;
-	getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
+	// //Retrieve the images from the filesystem
+	// vector<string> fileNames;
+	// vector<Mat> images;
+	// getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
 
-	// -1 for y val because you dont want to include self match
-	Mat colorVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
-	Mat textureVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
-	Mat comboVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
+	// // -1 for y val because you dont want to include self match
+	// Mat colorVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
+	// Mat textureVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
+	// Mat comboVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
 
-	colorMatch(fileNames, images, colorVals);
-	textureMatch(fileNames, images, textureVals);
-	comboMatch(fileNames, images, colorVals, textureVals, comboVals);
+	// colorMatch(fileNames, images, colorVals);
+	// textureMatch(fileNames, images, textureVals);
+	// comboMatch(fileNames, images, colorVals, textureVals, comboVals);
+
+	float data[4][3] = {{.5, .1, .2}, {.5, .4, .6}, {.1, .4, .3}, {.2, .6, .3}};
+	Mat test(4, 3, CV_32F, data);
+
+	createDendrogram(test);
 
 	// waitKey(0); // Wait for a keystroke in the window
 }
@@ -62,9 +68,9 @@ void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 	calcL1Norm(histograms, locals, globals, colorVals);
 
 
-	QTextCursor curs = this->ui->textEdit->textCursor();
-	curs.insertText("COLOR\n---------\n");
-	displayResults(curs, fileNames, colorVals);
+	// QTextCursor curs = this->ui->textEdit->textCursor();
+	// curs.insertText("COLOR\n---------\n");
+	// displayResults(curs, fileNames, colorVals);
 
 	
 	Mat bigImage = manyToOne(images, 10, 4);
@@ -130,9 +136,9 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 	calcL1Norm(histograms, locals, globals, textureVals);
 
 	// display the results
-	QTextCursor curs = this->ui->textEdit->textCursor();
-	curs.insertText("\n\n\nTEXTURE\n---------\n");
-	displayResults(curs, fileNames, textureVals);
+	// QTextCursor curs = this->ui->textEdit->textCursor();
+	// curs.insertText("\n\n\nTEXTURE\n---------\n");
+	// displayResults(curs, fileNames, textureVals);
 
 	// display the laplacian images
 	Mat bigImage = manyToOne(laplacians, 10, 4);
@@ -144,32 +150,107 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 void MainWindow::comboMatch(vector<string> &fileNames, vector<Mat> &images,
 			Mat &colorVals, Mat &textureVals, Mat &comboVals)
 {
-	float r = .7, s = 1.0;
+    float r = .5, s = 1.0;
 	QTextCursor curs = this->ui->textEdit->textCursor();
 
 	for (int i = 0; i < NUM_IMAGES; i ++)
 		for (int j = 0; j < NUM_IMAGES; j ++)
 		{
-			float colorVal = colorVals.at<float>(i,j);
-			float textureVal = textureVals.at<float>(i,j);
-			float comboVal = (r * colorVal) + ((s - r) * textureVal);
-
 
 			// keep track of all the values
 			if(j < i)
+			{
+				float colorVal = colorVals.at<float>(i,j);
+				float textureVal = textureVals.at<float>(i,j);
+				float comboVal = (r * colorVal) + ((s - r) * textureVal);
 				comboVals.at<float>(i, j) = comboVal;
+			}
 			else if(j > i)
+			{
+				float colorVal = colorVals.at<float>(i,j-1);
+				float textureVal = textureVals.at<float>(i,j-1);
+				float comboVal = (r * colorVal) + ((s - r) * textureVal);
 				comboVals.at<float>(i, j-1) = comboVal;
-			// cout << i << ", " << j << ":\t" << colorVal << "\t" << textureVal << "\t" 
-			// 	<< comboVal << "\t" << comboVals.at<float>(i,j) << endl;
+			}
+            // cout << i << ", " << j << ":\t" << colorVal << "\t" << textureVal << "\t"
+            //     << comboVal << "\t" << comboVals.at<float>(i,j) << endl;
 		}
 
-	curs.insertText("\n\n\nTEXTURE\n---------\n");
+	curs.insertText("\n\n\nCOMBO\n---------\n");
 	displayResults(curs, fileNames, comboVals);
 
 }
 // 
 
+
+void MainWindow::createDendrogram(Mat &comboVals)
+{
+	// transition to distance matrix values
+	comboVals = 1 - comboVals;
+
+	// create a new Mat to play with distances
+	Mat distances(comboVals.rows, comboVals.cols + 1, CV_32F);
+	for (int i =0; i < distances.rows; i ++)
+		for (int j =0; j < distances.cols; j ++)
+		{
+			// so we only have to deal with one set of vals
+			if( i < j)
+				distances.at<float>(i, j) = comboVals.at<float>(i, j);
+			else
+				distances.at<float>(i, j) = 2;
+		}
+
+	// to represent the dendrogram
+	Node *tree = new Node();
+
+	for (int i =0; i < comboVals.rows; i ++)
+	{
+		//find min/max
+		double min, max;
+		int minIdx[2];
+		minMaxIdx(distances, &min, &max, minIdx);
+		int m1 = minIdx[0];
+		int m2 = minIdx[1];
+
+		// remove the match from consideration
+		distances.at<float>(m1, m2) = 2;
+
+		if (tree.children == 0)
+		{
+			tree.addChild(new Node(m1));
+			tree.addChild(new Node(m2));
+			tree.distance = min;
+			for (int j = 0; j < distances.row(m1).cols; j ++)
+			{
+				// skip any indexes already excluded
+				if (distances.at<float>(j, m1) == 2)
+					continue;
+
+				// update the values of the first to match the
+				// maximums of the tree below
+				if(distances.at<float>(j, m1) > distances.at<float>(m2, j))
+					distances.at<float>(m2, j) = distances.at<float>(j, m1);
+				else
+					distances.at<float>(j, m1) = distances.at<float>(m2, j);
+
+				// remove the second match from consideration
+				distances.at<float>(m2, j) = 2;
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	// create Nodes out of values
+	vector<DendNode*> nodes;
+	for (int i = 0; i < comboVals.rows; i++)
+		nodes.push_back(new Node(i));
+
+
+
+}
 
 
 

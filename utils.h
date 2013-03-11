@@ -361,8 +361,6 @@ namespace util
 			if( maxIdx[1] >= i)
 				maxIdx[1]++;
 
-			cout << i <<" " << values.row(i).cols <<" " << maxIdx[1] <<" " << minIdx[1] << endl;
-
 			curs.insertImage(qImages[maxIdx[1]]);
 			curs.insertText("\n" + QString(fileNames[maxIdx[1]].c_str()).section("/",-1)
 					+ QString("\n%1").arg(max,4,'f',5));
@@ -389,8 +387,6 @@ namespace util
 		if(maxIdx[1] >= maxIdx[0])
 			maxIdx[1]++;
 		
-		cout << maxIdx[0] <<" " << maxIdx[1] <<" " << minIdx[0] <<" " << minIdx[1] <<" " << endl;
-
 		curs.insertImage(qImages[maxIdx[0]]);
 		curs.insertText("\n" + QString(fileNames[maxIdx[0]].c_str()).section("/",-1)
 				+ QString("\n%1").arg(max));

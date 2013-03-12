@@ -29,6 +29,14 @@
         <verstretch>100</verstretch>
        </sizepolicy>
       </property>
+      <property name="font">
+       <font>
+        <family>Courier New</family>
+        <pointsize>14</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="lineWrapMode">
        <enum>QTextEdit::NoWrap</enum>
       </property>

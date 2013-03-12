@@ -14,7 +14,8 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    dendnode.cpp
 
 HEADERS  += mainwindow.h\
     utils.h \

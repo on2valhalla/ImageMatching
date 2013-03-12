@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTextCursor>
+#include <QTextDocumentWriter>
 
 
 //OpenCV
@@ -34,10 +36,11 @@ public:
 					Mat &colorVals);
 	void textureMatch(vector<string> &fileNames, vector<Mat> &images,
 					Mat &textureVals);
-	void comboMatch(vector<string> &fileNames, vector<Mat> &images,
+	void comboMatch(vector<string> &fileNames,
             Mat &colorVals, Mat &textureVals, Mat &comboVals);
-	void createDendrogram(Mat & comboVals);
-	DendNode* try2(Mat & comboVals);
+	DendNode* linkage( Mat & comboVals, int linkageType = 0);
+    int drawDendrogram(QTextCursor &texCurs, QTextCursor &imgCurs, vector<string> &imgNames, 
+    	DendNode *tree, int totWidth = 40, int startWidth =100);
 	void run();
 	
 private:

@@ -35,19 +35,47 @@ void MainWindow::run()
 	getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
 
 	// -1 for y val because you dont want to include self match
+	// it messes with the minmax function (see inside for workaround)
 	Mat colorVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
 	Mat textureVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
 	Mat comboVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
 
 	colorMatch(fileNames, images, colorVals);
 	textureMatch(fileNames, images, textureVals);
-	comboMatch(fileNames, images, colorVals, textureVals, comboVals);
+	comboMatch(fileNames, colorVals, textureVals, comboVals);
 
-	// float data[4][3] = {{.5, .1, .2}, {.5, .4, .6}, {.1, .4, .3}, {.2, .6, .3}};
-	// Mat test(4, 3, CV_32F, data);
+	// convert the combination values to distances
+	// and disregard matches to same element 
+	// (2 is out of range for min)
+	comboVals = 1 - comboVals;
+	for (int i = 0; i < comboVals.rows; i++)
+		comboVals.at<float>(i,i) = 2;
 
-	try2(comboVals);
+	DendNode *completeTree = linkage(comboVals, 0);
+	DendNode *singleTree = linkage(comboVals, 1);
 
+    QTextCursor curs = this->ui->textEdit->textCursor();
+    curs.insertText("\n\n\n\nDendrogram For Complete Link");
+	curs.insertTable(1,2);
+	QTextCursor imgCurs(curs);
+	curs.movePosition(QTextCursor::NextCell);
+    curs.insertText("\n\n");
+    drawDendrogram(curs, imgCurs, fileNames, completeTree, 40, 0);
+
+	curs.movePosition(QTextCursor::End);
+    curs.insertText("\n\n\n\nDendrogram For Single Link");
+	curs.insertTable(1,2);
+    imgCurs = curs;
+	curs.movePosition(QTextCursor::NextCell);
+    curs.insertText("\n\n");
+    drawDendrogram(curs, imgCurs, fileNames, singleTree, 100, 0);
+
+    QTextDocument* document = this->ui->textEdit->document();
+    QTextDocumentWriter writer("/Users/on2valhalla/Documents/school/Visual Interfaces/someFile.odf", "ODF");
+    if (!writer.write(document))
+    {
+        cout << "error";
+    }
 	// waitKey(0); // Wait for a keystroke in the window
 }
 
@@ -67,9 +95,9 @@ void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 	calcL1Norm(histograms, locals, globals, colorVals);
 
 
-	// QTextCursor curs = this->ui->textEdit->textCursor();
-	// curs.insertText("COLOR\n---------\n");
-	// displayResults(curs, fileNames, colorVals);
+	QTextCursor curs = this->ui->textEdit->textCursor();
+	curs.insertText("COLOR\n---------\n");
+	displayResults(curs, fileNames, colorVals);
 
 	
 	Mat bigImage = manyToOne(images, 10, 4);
@@ -135,9 +163,9 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 	calcL1Norm(histograms, locals, globals, textureVals);
 
 	// display the results
-	// QTextCursor curs = this->ui->textEdit->textCursor();
-	// curs.insertText("\n\n\nTEXTURE\n---------\n");
-	// displayResults(curs, fileNames, textureVals);
+	QTextCursor curs = this->ui->textEdit->textCursor();
+	curs.insertText("\n\n\nTEXTURE\n---------\n");
+	displayResults(curs, fileNames, textureVals);
 
 	// display the laplacian images
 	Mat bigImage = manyToOne(laplacians, 10, 4);
@@ -146,8 +174,8 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 
 }
 
-void MainWindow::comboMatch(vector<string> &fileNames, vector<Mat> &images,
-			Mat &colorVals, Mat &textureVals, Mat &comboVals)
+void MainWindow::comboMatch(vector<string> &fileNames,
+                            Mat &colorVals, Mat &textureVals, Mat &comboVals)
 {
 	float r = .5, s = 1.0;
 	QTextCursor curs = this->ui->textEdit->textCursor();
@@ -181,15 +209,8 @@ void MainWindow::comboMatch(vector<string> &fileNames, vector<Mat> &images,
 }
 
 
-
-DendNode* MainWindow::try2(Mat &comboVals)
+DendNode* MainWindow::linkage(Mat &comboVals, int linkageType)
 {
-	// convert the combination values to distances
-	// and disregard matches to same element 
-	// (2 is out of range for min)
-	comboVals = 1 - comboVals;
-	for (int i = 0; i < comboVals.rows; i++)
-		comboVals.at<float>(i,i) = 2;
 
 	// initialize a node on the list for every image
 	list<DendNode*> nodes;
@@ -213,7 +234,14 @@ DendNode* MainWindow::try2(Mat &comboVals)
 		for (it = nodes.begin(); it != nodes.end(); it++)
 			for (jt = nodes.begin(); jt != nodes.end(); jt++)
 			{
-				float match = (*it)->maxMatch( *jt, comboVals );
+				if(it == jt)
+					continue;
+				float match;
+				if(linkageType == 0)
+					match = (*it)->maxMatch( *jt, comboVals );
+				else
+					match = (*it)->minMatch( *jt, comboVals );
+
 				if( match < min)
 				{
 					min = match;
@@ -226,7 +254,7 @@ DendNode* MainWindow::try2(Mat &comboVals)
 		// with the two indicies as children
 		DendNode *match = new DendNode(*mini, *minj, min);
         // cout << **mini << "  " << **minj << endl;
-        cout<< *match << endl;
+//        cout<< *match << endl;
 		nodes.erase(mini);
 		nodes.erase(minj);
 		nodes.push_back(match);
@@ -237,128 +265,50 @@ DendNode* MainWindow::try2(Mat &comboVals)
 	return root;
 }
 
+int MainWindow::drawDendrogram(QTextCursor &texCurs,QTextCursor &imgCurs, vector<string> &imgNames, 
+							DendNode *tree, int width, int startWidth)
+{
+	if (tree->distance == -1)
+	{
+		int i = tree->getIdx();
+        QImage image(imgNames[i].c_str());
+		imgCurs.insertImage(image);
+		if (i % 4 == 0)
+			imgCurs.insertText("\n\n\n\n\n");
+		else
+			imgCurs.insertText("\n\n\n\n");
+        return 0;
+	}
+	int baseD = (int)(tree->distance * width);
+
+	// in order recursive traversal
+	int leftD = drawDendrogram(texCurs, imgCurs, imgNames, tree->left, width, startWidth);
+
+	//draw linkage
+	int length = baseD - leftD;
+	for (int i = 0; i < length; ++i)
+		texCurs.insertText("X");
+	texCurs.insertText("|\n");
 
 
+	for(int j = 0; j < 6; j++)
+	{
+		for (int i = 0; i < baseD; i++)
+			texCurs.insertText(" ");
+		texCurs.insertText("|\n");
+	}
 
+	// fill in the right node
+	int rightD = drawDendrogram(texCurs, imgCurs, imgNames, tree->right, width, startWidth);
 
+	if(rightD != leftD)
+		length = baseD - rightD;
+	for (int i = 0; i < length; i++)
+		texCurs.insertText("X");
+	texCurs.insertText("|");
 
-
-
-
-
-
-
-
-
-
-
-
-
-// {
-// 	//convert to distance
-// 	comboVals = 1 - comboVals;
-
-// 	// create a new Mat to play with distances
-// 	Mat distances(comboVals.rows, comboVals.cols + 1, CV_32F);
-// 	vector<vector<int> *> inds;
-
-//     // cout<<comboVals<<endl;
-
-// 	float records[comboVals.rows][3];
-// 	int cnt = 0;
-// 	for (int i =0; i < distances.rows; i ++)
-// 	{
-// 		//push the inds onto the list as lists
-// 		vector<int> *tmp = new vector<int>(1,i);
-// 		inds.push_back(tmp);
-// 		for (int j =0; j < distances.cols; j ++)
-// 		{
-// 			// make perfect square out of the values
-//             if( j < i)
-// 				distances.at<float>(i, j) = comboVals.at<float>(i, j);
-// 			else if (j == i)
-// 				distances.at<float>(i, j) = 2;
-// 			else
-// 				distances.at<float>(i, j) = comboVals.at<float>(i, j - 1);
-// 		}
-// 	}
-
-	
-//     // cout<<distances<<"\nsize"<<inds.size()<<endl;
-
-// 	while (inds.size() > 1)
-// 	{
-// 		//find min/max
-// 		double min, max;
-// 		int minX[2];
-// 		minMaxIdx(distances, &min, &max, minX);
-
-// 		// copy everything from one match to the other
-// 		vector<int> *left = inds[minX[0]];
-// 		cout<<"Joining: ";
-// 		for (int i = 0; i < left->size(); i++)
-//             cout<<(*left)[i]<<",";
-// 		vector<int> *right = inds[minX[1]];
-// 		left->insert(left->end(), right->begin(), right->end());
-// 		inds.erase(inds.begin() + minX[1]);
-
-// 		cout<<" and ";
-// 		for (int i = 0; i < right->size(); i++)
-//             cout<<(*right)[i]<<",";
-// 		cout<<"at: "<< min<<endl;
-
-// 		distances.create(inds.size(), inds.size(), CV_32F);
-
-
-
-
-
-// 		// recreate the lookup table for combined lists
-// 		for (int i = 0; i < distances.rows; i++)
-// 			for (int j = 0; j < distances.cols; j++)
-// 			{
-// 				// cout<<i<<","<<j<<endl;
-// 				if (i == j) // eliminate the crossovers
-// 				{
-// 					// cout<<"equal"<<endl;
-// 					distances.at<float>(i,j) = 2;
-// 				}
-//                 else if (inds[i]->size() > 1)
-// 				{  // list of indicies, find max
-// 					float max = 0;
-// 					for (int k = 0; k < inds[i]->size(); k++)
-// 					{
-// 						// cout<<"k: "<< k <<endl;
-// 						if (comboVals.at<float>((*inds[i])[k],j) > max)
-// 							max = comboVals.at<float>((*inds[i])[k],j);
-// 					}
-// 					// cout<<"max: "<<max<<endl;
-// 					distances.at<float>(i,j) = max;
-// 				}
-// 				else // single element, update distance
-// 				{
-// 					distances.at<float>(i,j) = comboVals.at<float>((*inds[i])[0],j);
-
-// 					// cout<<"single: "<<comboVals.at<float>(inds[i][0],j)<<endl;
-// 				}
-
-// 			}
-// 	    // cout<<distances<<endl;
-// 	}
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
+	return baseD;
+}
 
 
 

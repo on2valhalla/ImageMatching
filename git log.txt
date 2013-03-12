@@ -1,0 +1,186 @@
+commit be44996d4029c08db02281612ae0bb42cbab5f58
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Mon Mar 11 15:02:00 2013 -0400
+
+    WOOOHOOOOO for pointers, matching complete, now for display
+
+commit 6c399f478d529db161fd234cde9f550d26317abf
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Mon Mar 11 13:21:17 2013 -0400
+
+    good plan starting over on dendrogram, node class fixed to allow
+
+commit f11f2d77028b4307c89146243b7067dbddbb52ce
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Mon Mar 11 12:50:22 2013 -0400
+
+    pairing is working, but one case is off 2,3 + 4
+
+commit bf489206ec1181a42c943b28f16e5faa16f6cadd
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Mon Mar 11 03:43:51 2013 -0400
+
+    max and min figured out for globals, now dendogram
+
+commit 283bc176e78d5e0a056ee82fd639a9dbcb8bcb6a
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 22:50:34 2013 -0400
+
+    max and min figured out for globals, now dendogram
+
+commit 65675ff502ffa7dc780b8ea1efc617d9541204c1
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 21:38:17 2013 -0400
+
+    combined and other functions still work, but numbers on new are off
+
+commit 855fc704c2505141293a468ca4249637b2ee2c54
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 21:07:21 2013 -0400
+
+    changed all values to a Mat
+
+commit 477ffa3dfacbf38ffc1529c17034e5bae63b1700
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 20:57:05 2013 -0400
+
+    set combo match function
+
+commit 653212b2b95487a0f3c4485176c260e58f9a2b20
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 20:53:17 2013 -0400
+
+    added all values aray
+
+commit 6ebe501bcedf7e2973e48a0744ec2b54ac2ef24b
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 20:50:26 2013 -0400
+
+    Part 3 begin
+
+commit ff8cf5df43c79e16605be45f9eec015f820039c3
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 20:26:28 2013 -0400
+
+    PART 2 DONE and cleaned up
+
+commit f5963b3ee8d8bf3c027384b31f4c063e6521c285
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 19:06:56 2013 -0400
+
+    PART 2 DONE
+
+commit 62338288e4e82b2e00caee737b6efdfe1ae87998
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 18:31:56 2013 -0400
+
+    part 2, lap matching done, choosing finer details now
+
+commit 5c12b7436db7dd538be75cf2004b48c8346d473a
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 17:03:48 2013 -0400
+
+    part 2, almost to laplacian
+
+commit c2d07940e0c62470344a83a0ba462c9273249c29
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 15:10:58 2013 -0400
+
+    in part 2 now, through normalizing the histograms
+
+commit 47544030d38cff880ab12a874027e8903633ff22
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 13:36:52 2013 -0400
+
+    cleaned up colormatch function, still working
+
+commit 2e2b04e09a7a07d121e2374a4d89677277ef3cc9
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 12:52:31 2013 -0400
+
+    deleted iplimage functions from util
+
+commit 1ae80553c7738bcb7001f6877dfbf29f46af8218
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 12:50:47 2013 -0400
+
+    everything is working MAJOR CHECKPOINT. starting part 2
+
+commit e5306e0bac995d9fee6685840c559b596b193cc6
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 12:11:59 2013 -0400
+
+    making headway
+
+commit 7170689e5ce097b796a30437b770d4981e79c24e
+Merge: 5ff6727 3a6f20c
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 11:37:04 2013 -0400
+
+    Merge branch 'master' into stable
+
+commit 5ff672770e796a53535da4eb16fccf98dcc082f4
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 11:30:31 2013 -0400
+
+    hope is here
+
+commit 58d22e668a12666a1ceba4ec623ab8135578f44f
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 11:20:48 2013 -0400
+
+    fixed double max/min problem
+
+commit 73592843b33ec3dd4b69c1cc44adcb50f1522603
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 11:17:50 2013 -0400
+
+    one more bites the dust
+
+commit edf2a4b1f93d1a1e17a0e7e9c54c456614070149
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 10:02:57 2013 -0400
+
+    obsessive, going after the doubles
+
+commit 3767ea11d281f5030a6876d3ec913edeba40cdbc
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 09:49:10 2013 -0400
+
+    the fucking equals was back
+
+commit 6885cc32058a50ca6fbab30adcace411e25df794
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sun Mar 10 09:19:59 2013 -0400
+
+    cleanup 2
+
+commit 3a6f20c66c08a789b86f3e7d3fde09fa1098bcfd
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sat Mar 9 23:26:51 2013 -0500
+
+    cleanup
+
+commit 78192696c45e02012ac314901c2eb436f223bf6e
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sat Mar 9 23:23:45 2013 -0500
+
+    still working
+
+commit ea0e9a17769e0c05ef91186903d6657e1e476f1e
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sat Mar 9 21:42:29 2013 -0500
+
+    finally some progress
+
+commit a72c944abed641856ef2c0e1b96eed94b128abc3
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Sat Mar 9 17:59:10 2013 -0500
+
+    startover
+
+commit 8f1f63bf0cd7ff83d8852b4bbf6073a7c1aa2989
+Author: Jason Carlisle Mann <m5praetor@gmail.com>
+Date:   Fri Mar 8 15:05:39 2013 -0500
+
+    init

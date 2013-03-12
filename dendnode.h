@@ -69,21 +69,37 @@ public:
 
 		for (; it != idxs.end(); it++)
 			for (jt = node->idxs.begin(); jt != node->idxs.end(); jt++)
-				if (lookup.at<float>(*it, *jt) > max)
+				if (*it != *jt && lookup.at<float>(*it, *jt) > max)
 					max = lookup.at<float>(*it, *jt);
 
 		return max;
 	}
-};
 
-std::ostream& operator<< (std::ostream &o, const DendNode &n)
-{
-	o << "{ ";
-	for (std::vector<int>::const_iterator it = n.idxs.begin(); it != n.idxs.end(); it++)
-		o << *it << ", ";
-	o << "}  d:" << n.distance;
-	return o;
-}
+
+	// finds the minimum match between two nodes (possibly trees)
+	// by checking the lookup Mat provided
+	float minMatch(const DendNode* node, const cv::Mat &lookup)
+	{
+		float min = 2;
+
+		std::vector<int>::iterator it = idxs.begin();
+		std::vector<int>::const_iterator jt;
+
+		for (; it != idxs.end(); it++)
+			for (jt = node->idxs.begin(); jt != node->idxs.end(); jt++)
+				if (*it != *jt && lookup.at<float>(*it, *jt) < min)
+					min = lookup.at<float>(*it, *jt);
+
+		return min;
+	}
+
+	int getIdx()
+	{
+		if(idxs.size() > 1)
+			return -1;
+        return idxs[0];
+	}
+};
 
 
 

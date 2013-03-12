@@ -54,23 +54,24 @@ void MainWindow::run()
     DendNode *completeTree = linkage(comboVals, 0);
     DendNode *singleTree = linkage(comboVals, 1);
 
-    completeTree->toJson("/Users/on2valhalla/Documents/school/Visual Interfaces/QTest/ImageMatching/hope.json");
+    completeTree->toJson("/Users/on2valhalla/Documents/school/Visual Interfaces/QTest/ImageMatching/complete.json");
+    singleTree->toJson("/Users/on2valhalla/Documents/school/Visual Interfaces/QTest/ImageMatching/single.json");
 
-    // QTextCursor curs = this->ui->textEdit->textCursor();
-    // curs.insertText("\n\n\n\nDendrogram For Complete Link");
-    // curs.insertTable(1,2);
-    // QTextCursor imgCurs(curs);
-    // curs.movePosition(QTextCursor::NextCell);
-    // curs.insertText("\n\n");
-    // drawDendrogram(curs, imgCurs, fileNames, completeTree, 40, 0);
+    QTextCursor curs = this->ui->textEdit->textCursor();
+    curs.insertText("\n\n\n\nDendrogram For Complete Link");
+    curs.insertTable(1,2);
+    QTextCursor imgCurs(curs);
+    curs.movePosition(QTextCursor::NextCell);
+    curs.insertText("\n\n");
+    drawDendrogram(curs, imgCurs, fileNames, completeTree, 40, 0);
 
-    // curs.movePosition(QTextCursor::End);
-    // curs.insertText("\n\n\n\nDendrogram For Single Link");
-    // curs.insertTable(1,2);
-    // imgCurs = curs;
-    // curs.movePosition(QTextCursor::NextCell);
-    // curs.insertText("\n\n");
-    // drawDendrogram(curs, imgCurs, fileNames, singleTree, 100, 0);
+    curs.movePosition(QTextCursor::End);
+    curs.insertText("\n\n\n\nDendrogram For Single Link");
+    curs.insertTable(1,2);
+    imgCurs = curs;
+    curs.movePosition(QTextCursor::NextCell);
+    curs.insertText("\n\n");
+    drawDendrogram(curs, imgCurs, fileNames, singleTree, 100, 0);
 
     // QTextDocument* document = this->ui->textEdit->document();
     // QTextDocumentWriter writer("/Users/on2valhalla/Documents/school/Visual Interfaces/someFile.html", "HTML");
@@ -100,14 +101,14 @@ void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 	calcL1Norm(histograms, locals, globals, colorVals);
 
 
-	// QTextCursor curs = this->ui->textEdit->textCursor();
-	// curs.insertText("COLOR\n---------\n");
-	// displayResults(curs, fileNames, colorVals);
+	QTextCursor curs = this->ui->textEdit->textCursor();
+	curs.insertText("COLOR\n---------\n");
+	displayResults(curs, fileNames, colorVals);
 
 	
-	// Mat bigImage = manyToOne(images, 10, 4);
-	// namedWindow("all");
-	// imshow("all", bigImage);
+	Mat bigImage = manyToOne(images, 10, 4);
+	namedWindow("all");
+	imshow("all", bigImage);
 
 }
 
@@ -167,10 +168,10 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 	double locals[NUM_IMAGES][2][2], globals[2][3];
 	calcL1Norm(histograms, locals, globals, textureVals);
 
-	// // display the results
-	// QTextCursor curs = this->ui->textEdit->textCursor();
-	// curs.insertText("\n\n\nTEXTURE\n---------\n");
-	// displayResults(curs, fileNames, textureVals);
+	// display the results
+	QTextCursor curs = this->ui->textEdit->textCursor();
+	curs.insertText("\n\n\nTEXTURE\n---------\n");
+	displayResults(curs, fileNames, textureVals);
 
 	// display the laplacian images
 	Mat bigImage = manyToOne(laplacians, 10, 4);
@@ -208,8 +209,8 @@ void MainWindow::comboMatch(vector<string> &fileNames,
 			//     << comboVal << "\t" << comboVals.at<float>(i,j) << endl;
 		}
 
-	// curs.insertText("\n\n\nCOMBO\n---------\n");
-	// displayResults(curs, fileNames, comboVals);
+	curs.insertText("\n\n\nCOMBO\n---------\n");
+	displayResults(curs, fileNames, comboVals);
 
 }
 
@@ -293,12 +294,12 @@ int MainWindow::drawDendrogram(QTextCursor &texCurs,QTextCursor &imgCurs, vector
 	int length = baseD - leftD;
 	for (int i = 0; i < length; ++i)
 		texCurs.insertText("X");
-	texCurs.insertText("|\n");
+	texCurs.insertText("▼\n");
 
 
 	for(int j = 0; j < 6; j++)
 	{
-		for (int i = 0; i < baseD; i++)
+		for (int i = 0; i < baseD+2; i++)
 			texCurs.insertText(" ");
 		texCurs.insertText("|\n");
 	}
@@ -310,7 +311,7 @@ int MainWindow::drawDendrogram(QTextCursor &texCurs,QTextCursor &imgCurs, vector
 		length = baseD - rightD;
 	for (int i = 0; i < length; i++)
 		texCurs.insertText("X");
-	texCurs.insertText("|");
+	texCurs.insertText("▲");
 
 	return baseD;
 }

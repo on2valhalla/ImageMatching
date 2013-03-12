@@ -14,7 +14,7 @@ class DendNode
 {
 	
 public:
-	static const float VALUE = 3.0;
+	static const float VALUE = 1.0;
 	double distance;
 	DendNode *left;
 	DendNode *right;

@@ -4,7 +4,7 @@
 <style>
 
 .link {
-  stroke: #B0B;
+  stroke: #ccc;
 }
 
 .node text {
@@ -16,20 +16,20 @@
 <body>
 <script>
 
-var width = 1900,
-    height = 1200
+var width = 1400,
+    height = 900
 
 var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
 
 var force = d3.layout.force()
-    .gravity(.03)
-    .distance(function(d) { return d.value * 300; })
+    .gravity(.1)
+    .distance(200)
     .charge(-300)
     .size([width, height]);
 
-d3.json("complete.json", function(json) {
+d3.json("single.json", function(json) {
   force
       .nodes(json.nodes)
       .links(json.links)

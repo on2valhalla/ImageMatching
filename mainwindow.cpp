@@ -29,53 +29,58 @@ MainWindow::~MainWindow()
 
 void MainWindow::run()
 {
-	//Retrieve the images from the filesystem
-	vector<string> fileNames;
-	vector<Mat> images;
-	getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
+    //Retrieve the images from the filesystem
+    vector<string> fileNames;
+    vector<Mat> images;
+    getImages(images, fileNames, IMG_DIR, NUM_IMAGES);
 
-	// -1 for y val because you dont want to include self match
-	// it messes with the minmax function (see inside for workaround)
-	Mat colorVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
-	Mat textureVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
-	Mat comboVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
+    // -1 for y val because you dont want to include self match
+    // it messes with the minmax function (see inside for workaround)
+    Mat colorVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
+    Mat textureVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
+    Mat comboVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
 
-	colorMatch(fileNames, images, colorVals);
-	textureMatch(fileNames, images, textureVals);
-	comboMatch(fileNames, colorVals, textureVals, comboVals);
+    colorMatch(fileNames, images, colorVals);
+    textureMatch(fileNames, images, textureVals);
+    comboMatch(fileNames, colorVals, textureVals, comboVals);
 
-	// convert the combination values to distances
-	// and disregard matches to same element 
-	// (2 is out of range for min)
-	comboVals = 1 - comboVals;
-	for (int i = 0; i < comboVals.rows; i++)
-		comboVals.at<float>(i,i) = 2;
+    // convert the combination values to distances
+    // and disregard matches to same element
+    // (2 is out of range for min)
+    comboVals = 1 - comboVals;
+    for (int i = 0; i < comboVals.rows; i++)
+        comboVals.at<float>(i,i) = 2;
 
-	DendNode *completeTree = linkage(comboVals, 0);
-	DendNode *singleTree = linkage(comboVals, 1);
+    DendNode *completeTree = linkage(comboVals, 0);
+    DendNode *singleTree = linkage(comboVals, 1);
 
-    QTextCursor curs = this->ui->textEdit->textCursor();
-    curs.insertText("\n\n\n\nDendrogram For Complete Link");
-	curs.insertTable(1,2);
-	QTextCursor imgCurs(curs);
-	curs.movePosition(QTextCursor::NextCell);
-    curs.insertText("\n\n");
-    drawDendrogram(curs, imgCurs, fileNames, completeTree, 40, 0);
+    completeTree->toJson("/Users/on2valhalla/Documents/school/Visual Interfaces/QTest/ImageMatching/hope.json");
 
-	curs.movePosition(QTextCursor::End);
-    curs.insertText("\n\n\n\nDendrogram For Single Link");
-	curs.insertTable(1,2);
-    imgCurs = curs;
-	curs.movePosition(QTextCursor::NextCell);
-    curs.insertText("\n\n");
-    drawDendrogram(curs, imgCurs, fileNames, singleTree, 100, 0);
+    // QTextCursor curs = this->ui->textEdit->textCursor();
+    // curs.insertText("\n\n\n\nDendrogram For Complete Link");
+    // curs.insertTable(1,2);
+    // QTextCursor imgCurs(curs);
+    // curs.movePosition(QTextCursor::NextCell);
+    // curs.insertText("\n\n");
+    // drawDendrogram(curs, imgCurs, fileNames, completeTree, 40, 0);
 
-    QTextDocument* document = this->ui->textEdit->document();
-    QTextDocumentWriter writer("/Users/on2valhalla/Documents/school/Visual Interfaces/someFile.odf", "ODF");
-    if (!writer.write(document))
-    {
-        cout << "error";
-    }
+    // curs.movePosition(QTextCursor::End);
+    // curs.insertText("\n\n\n\nDendrogram For Single Link");
+    // curs.insertTable(1,2);
+    // imgCurs = curs;
+    // curs.movePosition(QTextCursor::NextCell);
+    // curs.insertText("\n\n");
+    // drawDendrogram(curs, imgCurs, fileNames, singleTree, 100, 0);
+
+    // QTextDocument* document = this->ui->textEdit->document();
+    // QTextDocumentWriter writer("/Users/on2valhalla/Documents/school/Visual Interfaces/someFile.html", "HTML");
+    // if (!writer.write(document))
+    // {
+    //     cout << "error";
+    // }
+//    QList<QByteArray> q = QTextDocumentWriter::supportedDocumentFormats();
+//    for (int i = 0; i <q.size();i++)
+//        this->ui->textEdit->append(QString(q[i]));
 	// waitKey(0); // Wait for a keystroke in the window
 }
 
@@ -95,14 +100,14 @@ void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 	calcL1Norm(histograms, locals, globals, colorVals);
 
 
-	QTextCursor curs = this->ui->textEdit->textCursor();
-	curs.insertText("COLOR\n---------\n");
-	displayResults(curs, fileNames, colorVals);
+	// QTextCursor curs = this->ui->textEdit->textCursor();
+	// curs.insertText("COLOR\n---------\n");
+	// displayResults(curs, fileNames, colorVals);
 
 	
-	Mat bigImage = manyToOne(images, 10, 4);
-	namedWindow("all");
-	imshow("all", bigImage);
+	// Mat bigImage = manyToOne(images, 10, 4);
+	// namedWindow("all");
+	// imshow("all", bigImage);
 
 }
 
@@ -162,10 +167,10 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 	double locals[NUM_IMAGES][2][2], globals[2][3];
 	calcL1Norm(histograms, locals, globals, textureVals);
 
-	// display the results
-	QTextCursor curs = this->ui->textEdit->textCursor();
-	curs.insertText("\n\n\nTEXTURE\n---------\n");
-	displayResults(curs, fileNames, textureVals);
+	// // display the results
+	// QTextCursor curs = this->ui->textEdit->textCursor();
+	// curs.insertText("\n\n\nTEXTURE\n---------\n");
+	// displayResults(curs, fileNames, textureVals);
 
 	// display the laplacian images
 	Mat bigImage = manyToOne(laplacians, 10, 4);
@@ -203,8 +208,8 @@ void MainWindow::comboMatch(vector<string> &fileNames,
 			//     << comboVal << "\t" << comboVals.at<float>(i,j) << endl;
 		}
 
-	curs.insertText("\n\n\nCOMBO\n---------\n");
-	displayResults(curs, fileNames, comboVals);
+	// curs.insertText("\n\n\nCOMBO\n---------\n");
+	// displayResults(curs, fileNames, comboVals);
 
 }
 
@@ -274,9 +279,9 @@ int MainWindow::drawDendrogram(QTextCursor &texCurs,QTextCursor &imgCurs, vector
         QImage image(imgNames[i].c_str());
 		imgCurs.insertImage(image);
 		if (i % 4 == 0)
-			imgCurs.insertText("\n\n\n\n\n");
+			imgCurs.insertText(QString("\n%1\n\n\n").arg(imgNames[i].c_str()));
 		else
-			imgCurs.insertText("\n\n\n\n");
+			imgCurs.insertText(QString("\n%1\n\n").arg(imgNames[i].c_str()));
         return 0;
 	}
 	int baseD = (int)(tree->distance * width);

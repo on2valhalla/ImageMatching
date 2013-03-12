@@ -3,7 +3,10 @@
 
 #include <string>
 #include <vector>
+#include <stack>
 #include <iostream>
+#include <fstream>
+#include <cmath>
 
 #include <opencv2/core/core.hpp>
 
@@ -11,6 +14,7 @@ class DendNode
 {
 	
 public:
+	static const float VALUE = 3.0;
 	double distance;
 	DendNode *left;
 	DendNode *right;
@@ -69,7 +73,7 @@ public:
 
 		for (; it != idxs.end(); it++)
 			for (jt = node->idxs.begin(); jt != node->idxs.end(); jt++)
-				if (*it != *jt && lookup.at<float>(*it, *jt) > max)
+				if (lookup.at<float>(*it, *jt) > max)
 					max = lookup.at<float>(*it, *jt);
 
 		return max;
@@ -87,7 +91,7 @@ public:
 
 		for (; it != idxs.end(); it++)
 			for (jt = node->idxs.begin(); jt != node->idxs.end(); jt++)
-				if (*it != *jt && lookup.at<float>(*it, *jt) < min)
+				if (lookup.at<float>(*it, *jt) < min)
 					min = lookup.at<float>(*it, *jt);
 
 		return min;
@@ -97,8 +101,13 @@ public:
 	{
 		if(idxs.size() > 1)
 			return -1;
-        return idxs[0];
+		return idxs[0];
 	}
+
+	void toJson(std::string fileName);
+    int recursiveWriter(DendNode *node, std::ofstream &file, 
+    			std::stringstream &links, int *group, float *distTrack);
+	
 };
 
 

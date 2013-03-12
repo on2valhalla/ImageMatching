@@ -1,5 +1,10 @@
+/*
 
-//Have to put this here for the stupid MOC of QT
+Created by: Jason Carlisle Mann (on2valhalla | jcm2207@columbia.edu)
+
+Dendnode source
+
+*/
 #include "dendnode.h"
 
 std::ostream& operator<< (std::ostream &o, const DendNode &n)
@@ -16,6 +21,7 @@ void DendNode::toJson(std::string fileName)
 {
 	std::ofstream outputFile;
 	std::stringstream links;
+	std::cout << "Writing JSON to: " << fileName << std::endl;
 	outputFile.open(fileName.c_str(), std::ofstream::trunc | std::ofstream::out);
 
 	outputFile << "{\"nodes\":[\n";
@@ -46,18 +52,18 @@ int DendNode::recursiveWriter(DendNode *node, std::ofstream &file, std::stringst
 	// leaf node terminating condition
 	if (node->distance == -1)
 	{
-		int idx = node->idxs[0];
+		int idx = node->idxs[0] +1;
 		std::string addr;
-		if(idx + 1< 10)
+		if(idx< 10)
 			addr = ", \"img\":\"http://0.0.0.0:8000/img/i0";
 		else
 			addr = ", \"img\":\"http://0.0.0.0:8000/img/i";
 
 
 		file << "\t{\"name\":" << "\"" << idx << "\", \"group\":" << *group
-				<< addr << idx +1 << ".jpg\"}, \n";
+				<< addr << idx << ".jpg\"}, \n";
 
-		return idx;
+		return idx -1;
 	}
 
 	if (fabs(*distTrack - node->distance) > .05)

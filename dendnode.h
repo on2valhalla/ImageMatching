@@ -1,3 +1,10 @@
+/*
+
+Created by: Jason Carlisle Mann (on2valhalla | jcm2207@columbia.edu)
+
+A Node class for making dendrograms, as well as displaying with D3
+
+*/
 #ifndef DENDNODE_H
 #define DENDNODE_H
 

@@ -126,6 +126,7 @@ namespace util
 
 	}
 
+	// calculate the L1 norm of all the histograms
 	void calcL1Norm(vector<Mat> &histograms, double locals[NUM_IMAGES][2][2], 
 				double globals[2][3], Mat &allVals)
 	{
@@ -181,73 +182,6 @@ namespace util
 		}
 	}
 
-	void displayHistogramResults(QTextCursor &curs, vector<string> &fileNames, 
-									double locals[][2][2], double globals[2][3])
-	{
-
-		//get display images
-		vector<QImage> qImages(NUM_IMAGES);
-		for (int i = 0; i< NUM_IMAGES; i++)
-			qImages[i] = QImage(fileNames[i].c_str());
-
-
-		curs.insertText("Histogram Local Matches (Max/Min)");
-		curs.insertTable(40,3);
-		for (int i = 0; i< NUM_IMAGES; i++)
-		{
-			curs.insertImage(qImages[i]);
-			curs.insertText("\n" + QString(fileNames[i].c_str()).section("/",-1));
-			curs.movePosition(QTextCursor::NextCell);
-
-			double min = locals[i][0][0];
-			int minIdx = (int)locals[i][0][1];
-			double max = locals[i][1][0];
-			int maxIdx = (int)locals[i][1][1];
-			curs.insertImage(qImages[maxIdx]);
-			curs.insertText("\n" + QString(fileNames[maxIdx].c_str()).section("/",-1)
-					+ QString("\n%1").arg(max,4,'f',5));
-			curs.movePosition(QTextCursor::NextCell);
-
-			curs.insertImage(qImages[minIdx]);
-			curs.insertText("\n" + QString(fileNames[minIdx].c_str()).section("/",-1)
-					+ QString("\n%1").arg(min,4,'f',5));
-			curs.movePosition(QTextCursor::NextCell);
-		}
-
-
-		curs.movePosition(QTextCursor::End);
-		curs.insertText("\n\nHistogram Global Matches (Max/Min)");
-		curs.insertTable(2,2);
-
-
-		double min = globals[0][0];
-		int minIdx1 = (int)globals[0][1];
-		int minIdx2 = (int)globals[0][2];
-		double max = globals[1][0];
-		int maxIdx1 = (int)globals[1][1];
-		int maxIdx2 = (int)globals[1][2];
-		
-		curs.insertImage(qImages[maxIdx1]);
-		curs.insertText("\n" + QString(fileNames[maxIdx1].c_str()).section("/",-1)
-				+ QString("\n%1").arg(max));
-		curs.movePosition(QTextCursor::NextCell);
-
-		curs.insertImage(qImages[maxIdx2]);
-		curs.insertText("\n" + QString(fileNames[maxIdx2].c_str()).section("/",-1)
-				+ QString("\n%1").arg(max));
-		curs.movePosition(QTextCursor::NextCell);
-
-
-		curs.insertImage(qImages[minIdx1]);
-		curs.insertText("\n" + QString(fileNames[minIdx1].c_str()).section("/",-1)
-				+ QString("\n%1").arg(min));
-		curs.movePosition(QTextCursor::NextCell);
-
-		curs.insertImage(qImages[minIdx2]);
-		curs.insertText("\n" + QString(fileNames[minIdx2].c_str()).section("/",-1)
-				+ QString("\n%1").arg(min));
-		curs.movePosition(QTextCursor::NextCell);
-	}
 
 	// converts image to grey
 	void bgrToGrey(const Mat &image, Mat &grey)
@@ -407,6 +341,51 @@ namespace util
 		curs.insertText("\n" + QString(fileNames[minIdx[1]].c_str()).section("/",-1)
 				+ QString("\n%1").arg(min));
 		curs.movePosition(QTextCursor::NextCell);
+	}
+
+
+
+	// The parameter data should be representative of distance and normalized
+	static const float VALUE = 10.;
+	void matToJson(cv::Mat &data, std::string fileName)
+	{
+		std::ofstream outputFile;
+		std::cout << "Writing JSON to: " << fileName <<std::endl;
+		outputFile.open(fileName.c_str(), std::ofstream::trunc | std::ofstream::out);
+
+		outputFile << "{\"nodes\":[\n";
+
+		for (int i = 1; i <= data.rows; i++)
+		{
+			outputFile << "\t{\"name\":" << "\"" << i << "\", \"group\":" << i / 10	;
+			if(i < 10)
+				outputFile << ", \"img\":\"http://0.0.0.0:8000/img/i0" << i << ".jpg\"}, \n";
+			else
+				outputFile <<", \"img\":\"http://0.0.0.0:8000/img/i" << i << ".jpg\"}, \n";
+		}
+
+		// remove the comma
+		long pos = outputFile.tellp();
+		outputFile.seekp(pos-3);
+
+		outputFile << "\n],\n" << "\"links\":[\n";
+
+		for (int i = 0; i < data.rows; i++)
+			for (int j = 0; j < data.rows; j++)
+			{
+				if (i == j)
+					continue;
+				outputFile << "\t{\"source\":" << i << ", \"target\":" << j
+							<< ", \"value\":" << data.at<float>(i,j) * VALUE << "}, \n";
+			}
+
+		// remove the comma
+		pos = outputFile.tellp();
+		outputFile.seekp(pos-3);
+
+		outputFile << "\n]}";
+
+		outputFile.close();
 	}
 }
 

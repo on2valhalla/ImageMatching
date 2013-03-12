@@ -19,7 +19,6 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h\
     utils.h \
-    colorhistogram.h \
     dendnode.h
 
 FORMS    += mainwindow.ui

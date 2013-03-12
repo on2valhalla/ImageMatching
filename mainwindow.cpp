@@ -2,7 +2,7 @@
 
 Created by: Jason Carlisle Mann (on2valhalla | jcm2207@columbia.edu)
 
-Main for the Image Matching program
+Main Window for the Image Matching program
 
 */
 
@@ -40,6 +40,10 @@ void MainWindow::run()
     Mat textureVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
     Mat comboVals(NUM_IMAGES, NUM_IMAGES -1, CV_32F);
 
+    
+	QTextCursor curs = this->ui->textEdit->textCursor();
+	curs.insertText("COLOR\n---------\n");
+
     colorMatch(fileNames, images, colorVals);
     textureMatch(fileNames, images, textureVals);
     comboMatch(fileNames, colorVals, textureVals, comboVals);
@@ -54,35 +58,39 @@ void MainWindow::run()
     DendNode *completeTree = linkage(comboVals, 0);
     DendNode *singleTree = linkage(comboVals, 1);
 
-    completeTree->toJson("/Users/on2valhalla/Documents/school/Visual Interfaces/QTest/ImageMatching/complete.json");
-    singleTree->toJson("/Users/on2valhalla/Documents/school/Visual Interfaces/QTest/ImageMatching/single.json");
+    completeTree->toJson("/Users/on2valhalla/Documents/school/Visual Interfaces/QTest/ImageMatching/completeLink.json");
+    singleTree->toJson("/Users/on2valhalla/Documents/school/Visual Interfaces/QTest/ImageMatching/singleLink.json");
 
-    QTextCursor curs = this->ui->textEdit->textCursor();
-    curs.insertText("\n\n\n\nDendrogram For Complete Link");
-    curs.insertTable(1,2);
-    QTextCursor imgCurs(curs);
-    curs.movePosition(QTextCursor::NextCell);
-    curs.insertText("\n\n");
-    drawDendrogram(curs, imgCurs, fileNames, completeTree, 40, 0);
+    comboVals = 1 - comboVals;
+    matToJson(comboVals, "/Users/on2valhalla/Documents/school/Visual Interfaces/QTest/ImageMatching/allLinks.json");
 
-    curs.movePosition(QTextCursor::End);
-    curs.insertText("\n\n\n\nDendrogram For Single Link");
-    curs.insertTable(1,2);
-    imgCurs = curs;
-    curs.movePosition(QTextCursor::NextCell);
-    curs.insertText("\n\n");
-    drawDendrogram(curs, imgCurs, fileNames, singleTree, 100, 0);
+	if(DISPLAY)
+	{
+	    QTextCursor curs = this->ui->textEdit->textCursor();
+	    curs.insertText("\n\n\n\nDendrogram For Complete Link");
+	    curs.insertTable(1,2);
+	    QTextCursor imgCurs(curs);
+	    curs.movePosition(QTextCursor::NextCell);
+	    curs.insertText("\n\n");
+	    drawDendrogram(curs, imgCurs, fileNames, completeTree, 40, 0);
 
+	    curs.movePosition(QTextCursor::End);
+	    curs.insertText("\n\n\n\nDendrogram For Single Link");
+	    curs.insertTable(1,2);
+	    imgCurs = curs;
+	    curs.movePosition(QTextCursor::NextCell);
+	    curs.insertText("\n\n");
+	    drawDendrogram(curs, imgCurs, fileNames, singleTree, 100, 0);
+	}
+
+
+    // To write the contents of the textEdit to an html file
     // QTextDocument* document = this->ui->textEdit->document();
     // QTextDocumentWriter writer("/Users/on2valhalla/Documents/school/Visual Interfaces/someFile.html", "HTML");
     // if (!writer.write(document))
     // {
     //     cout << "error";
     // }
-//    QList<QByteArray> q = QTextDocumentWriter::supportedDocumentFormats();
-//    for (int i = 0; i <q.size();i++)
-//        this->ui->textEdit->append(QString(q[i]));
-	// waitKey(0); // Wait for a keystroke in the window
 }
 
 void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
@@ -100,16 +108,17 @@ void MainWindow::colorMatch(vector<string> &fileNames, vector<Mat> &images,
 	double globals[2][3];
 	calcL1Norm(histograms, locals, globals, colorVals);
 
+	if(DISPLAY)
+	{
+		QTextCursor curs = this->ui->textEdit->textCursor();
+		curs.insertText("COLOR\n---------\n");
+		displayResults(curs, fileNames, colorVals);
 
-	QTextCursor curs = this->ui->textEdit->textCursor();
-	curs.insertText("COLOR\n---------\n");
-	displayResults(curs, fileNames, colorVals);
-
-	
-	Mat bigImage = manyToOne(images, 10, 4);
-	namedWindow("all");
-	imshow("all", bigImage);
-
+		
+		Mat bigImage = manyToOne(images, 10, 4);
+		namedWindow("all");
+		imshow("all", bigImage);
+	}
 }
 
 void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
@@ -119,7 +128,6 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 	//will hold processed histograms
 	vector<Mat> histograms(NUM_IMAGES);
 	vector<Mat> laplacians(NUM_IMAGES);
-
 
 
 	// for testing the min and max ranges of the laplacians
@@ -168,16 +176,18 @@ void MainWindow::textureMatch(vector<string> &fileNames, vector<Mat> &images,
 	double locals[NUM_IMAGES][2][2], globals[2][3];
 	calcL1Norm(histograms, locals, globals, textureVals);
 
-	// display the results
-	QTextCursor curs = this->ui->textEdit->textCursor();
-	curs.insertText("\n\n\nTEXTURE\n---------\n");
-	displayResults(curs, fileNames, textureVals);
+	if(DISPLAY)
+	{
+		// display the results
+		QTextCursor curs = this->ui->textEdit->textCursor();
+		curs.insertText("\n\n\nTEXTURE\n---------\n");
+		displayResults(curs, fileNames, textureVals);
 
-	// display the laplacian images
-	Mat bigImage = manyToOne(laplacians, 10, 4);
-	namedWindow("laplacian");
-	imshow("laplacian", bigImage);
-
+		// display the laplacian images
+		Mat bigImage = manyToOne(laplacians, 10, 4);
+		namedWindow("laplacian");
+		imshow("laplacian", bigImage);
+	}
 }
 
 void MainWindow::comboMatch(vector<string> &fileNames,
@@ -205,16 +215,19 @@ void MainWindow::comboMatch(vector<string> &fileNames,
 				float comboVal = (r * colorVal) + ((s - r) * textureVal);
 				comboVals.at<float>(i, j-1) = comboVal;
 			}
-			// cout << i << ", " << j << ":\t" << colorVal << "\t" << textureVal << "\t"
-			//     << comboVal << "\t" << comboVals.at<float>(i,j) << endl;
 		}
 
-	curs.insertText("\n\n\nCOMBO\n---------\n");
-	displayResults(curs, fileNames, comboVals);
+	if(DISPLAY)
+	{
+		curs.insertText("\n\n\nCOMBO\n---------\n");
+		displayResults(curs, fileNames, comboVals);
+	}
 
 }
 
-
+// Clustering images together based on their similarity data
+// linkage type = 0 for complete link
+// linkage type = 1 for single link
 DendNode* MainWindow::linkage(Mat &comboVals, int linkageType)
 {
 
@@ -259,8 +272,6 @@ DendNode* MainWindow::linkage(Mat &comboVals, int linkageType)
 		// Once the min value and indicies are found, create a new node
 		// with the two indicies as children
 		DendNode *match = new DendNode(*mini, *minj, min);
-        // cout << **mini << "  " << **minj << endl;
-//        cout<< *match << endl;
 		nodes.erase(mini);
 		nodes.erase(minj);
 		nodes.push_back(match);
@@ -271,6 +282,8 @@ DendNode* MainWindow::linkage(Mat &comboVals, int linkageType)
 	return root;
 }
 
+// Draw the created dendrogram from the root node (recursive)
+// Note: Very finicky.... dont mess with the spacing
 int MainWindow::drawDendrogram(QTextCursor &texCurs,QTextCursor &imgCurs, vector<string> &imgNames, 
 							DendNode *tree, int width, int startWidth)
 {

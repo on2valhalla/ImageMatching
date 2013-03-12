@@ -1,3 +1,10 @@
+/*
+
+Created by: Jason Carlisle Mann (on2valhalla | jcm2207@columbia.edu)
+
+MainWindow header for the Image Matching program
+
+*/
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -42,6 +49,8 @@ public:
     int drawDendrogram(QTextCursor &texCurs, QTextCursor &imgCurs, vector<string> &imgNames, 
     	DendNode *tree, int totWidth = 40, int startWidth =100);
 	void run();
+
+	static const bool DISPLAY = false;
 	
 private:
 	Ui::MainWindow *ui;
